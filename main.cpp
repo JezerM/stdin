@@ -26,5 +26,7 @@ int main() {
     refreshScreen();
     processKey();
   }
+
+  printf("\x1b[?25h");
   return 0;
 }
