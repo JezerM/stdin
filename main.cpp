@@ -14,6 +14,7 @@ void die(const char *c);
 void processKey();
 void refreshScreen();
 void init();
+void clear();
 
 /*** init ***/
 
@@ -21,6 +22,7 @@ int main() {
   char *locale;
   locale = setlocale(LC_ALL, "en_US.utf8");
   enableRawMode();
+  clear();
   init();
   while (1) {
     refreshScreen();

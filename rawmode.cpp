@@ -9,28 +9,42 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 
+#include "menu.h"
+#include "winConf.h"
+#include "buffer.h"
+
 #include <vector>
 
 #include <iostream>
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
-/*** data ***/
-
-/* Estructura para la configuración de pantalla */
-struct winConfig {
-  int cx, cy; // Posición [x y] del cursor en pantalla
-  int srows; // Filas de la ventana
-  int scols; // Columnas de la ventana
-  struct termios orig_termios; // La estructura termios
-};
-
-typedef void (*Function)();
-
 struct winConfig conf;
 
-
 /*** terminal ***/
+
+/* Añade carácteres con una determinada longitud
+ * La longitud debe de especificarse correctamente o provocará errores inesperados.
+ * El buffer *ab* debe estar precedido de "&". Si se especifica como parámetro será con "*", y entonces su uso no necesitará de "&" ó "*"
+ * Ejemplo:
+ *     "abAppend(&ab, "ola", 3)"
+ *     "int funcion(struct abuf *ab) {
+ *         abAppend(ab, "hello", 5);
+ *     }"
+ */
+void abAppend(struct abuf *ab, const char *s, int len) {
+  char *ne;
+  ne = (char*) realloc(ab->b, ab->len + len);
+  if (ne == NULL) return;
+  memcpy(&ne[ab->len], s, len);
+  ab->b = ne;
+  ab->len += len;
+}
+
+/* Libera el "caché" del buffer *ab* */
+void abFree(struct abuf *ab) {
+  free(ab->b);
+}
 
 /* Limpia la pantalla */
 void clear() {
@@ -108,39 +122,6 @@ int getWindowSize(int *rows, int *cols) {
   }
 }
 
-/*** buffer ***/
-
-/* Estructura para el buffer */
-struct abuf {
-  char *b; // Carácteres
-  int len; // Longitud o tamaño de carácteres
-};
-
-#define ABUF_INIT {NULL, 0}
-
-/* Añade carácteres con una determinada longitud
- * La longitud debe de especificarse correctamente o provocará errores inesperados.
- * El buffer *ab* debe estar precedido de "&". Si se especifica como parámetro será con "*", y entonces su uso no necesitará de "&" ó "*"
- * Ejemplo:
- *     "abAppend(&ab, "ola", 3)"
- *     "int funcion(struct abuf *ab) {
- *         abAppend(ab, "hello", 5);
- *     }"
- */
-void abAppend(struct abuf *ab, const char *s, int len) {
-  char *ne;
-  ne = (char*) realloc(ab->b, ab->len + len);
-  if (ne == NULL) return;
-  memcpy(&ne[ab->len], s, len);
-  ab->b = ne;
-  ab->len += len;
-}
-
-/* Libera el "caché" del buffer *ab* */
-void abFree(struct abuf *ab) {
-  free(ab->b);
-}
-
 /*** Menus ***/
 
 /* Realiza una división de *text* por cada *del*
@@ -160,109 +141,58 @@ std::vector<std::string> split(std::string text, std::string del = " ") {
   return arr;
 }
 
-/* Estructura para crear opciones de menú */
-struct MenuOption {
-  char name[50]; // El nombre a mostrar en pantalla
-  char id[20]; // El identificador
-  int posx = 0; // La posición x en pantalla (No inicializar manualmente)
-  int posy = 0; // La posición y en pantalla (No inicializar manualmente)
-};
-
-
-MenuOption nullOption = {"NULL", "none", 0, 0};
-
-/* Clase para la creación de menús */
-class Menu {
-
-  public:
-    std::string id;
-    std::string name;
-    std::string desc;
-    int indentSpace = 4;
-    int actualPos = 0;
-    static const int numberOptions = 10;
-    MenuOption options[numberOptions];
-
-    Menu(std::string ida) {
-      id = ida;
-      for (int i = 0; i < numberOptions ; i++) {
-        options[i] = nullOption;
-      }
-    }
-
-    /* Actualiza las opciones y sus datos */
-    void update() {
-      int posx = indentSpace;
-      int posy = 3;
-      for (int i = 0; i < numberOptions; i++) {
-        if (strcmp(options[i].name, "NULL") == 0) continue;
-        options[i].posx = posx;
-        options[i].posy = posy;
-        posy++;
-      }
-    }
-
-    /* Renderiza el menú en pantalla */
-    void render(struct abuf *ab) {
-      update();
-      abAppend(ab, name.c_str(), name.length());
-      abAppend(ab, "\r\n", 2);
-      abAppend(ab, desc.c_str(), desc.length());
-      abAppend(ab, "\r\n\r\n", 4);
-
-      for (int i = 0; i < numberOptions; i++) {
-        if (strcmp(options[i].name, "NULL") == 0) continue;
-        abAppend(ab, std::string(indentSpace, ' ').c_str(), indentSpace);
-        if (actualPos == i) abAppend(ab, "\u001b[107;30m", 9);
-        abAppend(ab, options[i].name, sizeof(options[i].name));
-        if (actualPos == i) abAppend(ab, "\u001b[0m", 4);
-        abAppend(ab, "\r\n", 2);
-      }
-    }
-
-    /* Mueve el cursor entre las opciones del menú */
-    void gotoPos(int pos) {
-      if (pos < 0) return;
-      if (pos > numberOptions - 1) return;
-      if (strcmp(options[pos].name, "NULL") == 0) return;
-      actualPos = pos;
-      conf.cx = options[pos].posx;
-      conf.cy = options[pos].posy;
-    }
-
-    /* Ejecuta *manageMenus* con el elemento en la posición actual */
-    void select() {
-      
-    }
-};
-
-Menu menu("");
-Menu mainMenu("main");
-Menu firstMenu("first");
+Menu menu("", &conf);
+std::vector<Menu> listMenus;
+Menu mainMenu("main", &conf);
+Menu firstMenu("first", &conf);
 
 /*** input ***/
 
-/* Mueve el cursor */
-void moveCursor(std::string dir) {
-  if (dir == "left") {
-    if (conf.cx != 0) {
-      conf.cx--;
+/* Obtiene el índice del menú actual */
+int getActualMenuIndex() {
+  int ind = 0;
+  for (int i = 0; i < listMenus.size(); i++) {
+    if (listMenus[i].id == menu.id) {
+      ind = i; break;
     }
-  } else if (dir == "right") {
-    if (conf.cx != conf.scols -1) {
-      conf.cx++;
-    }
-  } else if (dir == "up") {
-      menu.gotoPos(menu.actualPos-1);
-  } else if (dir == "down") {
-      menu.gotoPos(menu.actualPos+1);
   }
+  return ind;
+}
+
+/* Obtiene el índice del menú según el id */
+int getMenuIndex(std::string id) {
+  int ind = -1;
+  for (int i = 0; i < listMenus.size(); i++) {
+    if (listMenus[i].id == id) {
+      ind = i; break;
+    }
+  }
+  return ind;
+}
+
+/* Cambia el menú según el índice.
+ * Si el índice excede el tamaño de la lista, no se hará nada.*/
+void changeMenus(int ind) {
+  if (ind >= listMenus.size()) return;
+  int actualInd = getActualMenuIndex();
+  listMenus[actualInd] = menu;
+  menu = listMenus[ind];
+}
+
+/* Cambia el menú según el id.
+ * Si el id no existe en la lista, no se hará nada.*/
+void changeMenus(std::string id) {
+  int menuInd = getMenuIndex(id);
+  if (menuInd == -1) return;
+  int actualInd = getActualMenuIndex();
+  listMenus[actualInd] = menu;
+  menu = listMenus[menuInd];
 }
 
 /* Aquí se manejarán las opciones y sus acciones */
 void manageMenus(std::string element) {
   std::vector<std::string> arr = split(element, "/");
-  if (arr[0] == "main") {
+  if (arr[0] == "main") { // Main Menu
     if (arr[1] == "exit") {
       clear();
       printf("\x1b[?25h");
@@ -270,15 +200,30 @@ void manageMenus(std::string element) {
     } else
     if (arr[1] == "first") {
       clear();
-      menu = firstMenu;
+      changeMenus("first");
     }
   } else
-  if (arr[0] == "first") {
+  if (arr[0] == "first") { // First Menu
     if (arr[1] == "exit") {
-      menu = mainMenu;
+      clear();
+      changeMenus("main");
     }
   }
 
+}
+
+/* Mueve el cursor */
+void moveCursor(std::string dir) {
+  if (dir == "left") {
+    if (menu.id != "main")
+    manageMenus(menu.id + "/exit");
+  } else if (dir == "right") {
+    manageMenus(menu.id + "/" + menu.options[menu.actualPos].id);
+  } else if (dir == "up") {
+      menu.gotoPos(menu.actualPos-1);
+  } else if (dir == "down") {
+      menu.gotoPos(menu.actualPos+1);
+  }
 }
 
 /* Procesa las teclas leídas y realiza sus respectivas acciones */
@@ -321,7 +266,6 @@ void processKey() {
     manageMenus(element);
   }
 }
-
 
 /*** output ***/
 
@@ -369,11 +313,14 @@ void initMenus() {
   firstMenu.name = "This is the first menu, not the main";
   firstMenu.desc = "Just that...";
   MenuOption fa = {"Fa", "fa"};
-  MenuOption ba = {"Ba", "ba"};
+  MenuOption ba = {"Ba", "ba", 1};
   MenuOption back = {"Atrás", "exit"};
   firstMenu.options[0] = fa;
   firstMenu.options[1] = ba;
   firstMenu.options[2] = back;
+
+  listMenus.push_back(mainMenu);
+  listMenus.push_back(firstMenu);
 }
 
 /* Actualiza la pantalla */
