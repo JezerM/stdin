@@ -1,8 +1,9 @@
 all: compile
 
 # The compiler to use
-CC := /bin/g++-10
+CC := g++
 VER := #-std=c++11
+FLAGS := -pthread
 
 # Target file
 TARGET := test
@@ -14,5 +15,5 @@ HEADERS := buff.h winConf.h menu.h
 
 compile:
 	@echo "Compilando..."
-	${CC} ${SOURCES} ${HEADERS} ${VER} -o ${TARGET}
+	${CC} ${SOURCES} ${HEADERS} -o ${TARGET} ${VER} ${FLAGS}
 	@echo "Terminado."
