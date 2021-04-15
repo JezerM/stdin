@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef BUFFER_H
-#define BUFFER_H 1 // Estos son guards para evitar múltiples declaraciones
+#ifndef BUFF_H
+#define BUFF_H 1 // Estos son guards para evitar múltiples declaraciones
 
 /*** buffer ***/
 

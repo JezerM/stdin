@@ -11,7 +11,7 @@
 
 #include "menu.h"
 #include "winConf.h"
-#include "buffer.h"
+#include "buff.h"
 
 #include <vector>
 

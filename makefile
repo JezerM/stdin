@@ -1,17 +1,18 @@
 all: compile
 
 # The compiler to use
-CC := g++
+CC := /bin/g++-10
+VER := #-std=c++11
 
 # Target file
 TARGET := test
 
 # File sources
 SOURCES := main.cpp rawmode.cpp
-HEADERS := buffer.h winConf.h menu.h
+HEADERS := buff.h winConf.h menu.h
 
 
 compile:
 	@echo "Compilando..."
-	${CC} ${SOURCES} ${HEADERS} -o ${TARGET}
+	${CC} ${SOURCES} ${HEADERS} ${VER} -o ${TARGET}
 	@echo "Terminado."

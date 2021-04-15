@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "winConf.h"
-#include "buffer.h"
+#include "buff.h"
 
 extern struct winConfig conf;
 
@@ -21,11 +21,26 @@ struct MenuOption {
 
 static MenuOption nullOption = {"NULL", "none", 0, 0};
 
-/* Clase para la creación de menús */
-class Menu {
-
+class window {
   public:
     std::string id;
+    std::string name;
+
+    window(std::string ida) {
+      id = ida;
+    }
+
+    void update();
+
+    void render();
+
+};
+
+
+/* Clase para la creación de menús */
+class Menu: public window {
+
+  public:
     std::string name;
     std::string desc;
     int indentSpace = 4;
@@ -34,8 +49,7 @@ class Menu {
     MenuOption options[numberOptions];
     winConfig *confi; // Si ocurren errores al mover el cursor, posiblemente sea por no usar esto
 
-    Menu(std::string ida, struct winConfig *co) {
-      id = ida;
+    Menu(std::string ida, struct winConfig *co) : window(ida) {
       confi = co;
       for (int i = 0; i < numberOptions ; i++) {
         options[i] = nullOption;
