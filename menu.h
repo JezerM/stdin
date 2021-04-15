@@ -21,12 +21,12 @@ struct MenuOption {
 
 static MenuOption nullOption = {"NULL", "none", 0, 0};
 
-class window {
+class Window {
   public:
     std::string id;
     std::string name;
 
-    window(std::string ida) {
+    Window(std::string ida) {
       id = ida;
     }
 
@@ -38,7 +38,7 @@ class window {
 
 
 /* Clase para la creación de menús */
-class Menu: public window {
+class Menu: public Window {
 
   public:
     std::string name;
@@ -49,7 +49,7 @@ class Menu: public window {
     MenuOption options[numberOptions];
     winConfig *confi; // Si ocurren errores al mover el cursor, posiblemente sea por no usar esto
 
-    Menu(std::string ida, struct winConfig *co) : window(ida) {
+    Menu(std::string ida, struct winConfig *co) : Window(ida) {
       confi = co;
       for (int i = 0; i < numberOptions ; i++) {
         options[i] = nullOption;
@@ -97,3 +97,10 @@ class Menu: public window {
       conf.cy = options[pos].posy;
     }
 };
+
+class Timer: public Window {
+  public:
+    time_t time;
+
+};
+
