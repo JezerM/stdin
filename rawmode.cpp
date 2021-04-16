@@ -61,6 +61,8 @@ void die(const char *s) {
 
 /* Desabilita el modo "Raw" */
 void disableRawMode() {
+  write(STDOUT_FILENO, "\e[?1000l", 8);
+  write(STDOUT_FILENO, "\e[?1006l", 8);
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &conf.orig_termios) == -1) {
     die("tcsetattr");
   }
@@ -78,6 +80,8 @@ void enableRawMode() {
   raw.c_oflag &= ~(OPOST);
   raw.c_cflag |= (CS8);
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+  write(STDOUT_FILENO, "\e[?1000h", 8);
+  write(STDOUT_FILENO, "\e[?1006h", 8);
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
     die("tcsetattr");
   } 
@@ -194,18 +198,15 @@ void manageMenus(std::string element) {
   std::vector<std::string> arr = split(element, "/");
   if (arr[0] == "main") { // Main Menu
     if (arr[1] == "exit") {
-      clear();
       printf("\x1b[?25h");
       exit(0);
     } else
     if (arr[1] == "first") {
-      clear();
       changeMenus("first");
     }
   } else
   if (arr[0] == "first") { // First Menu
     if (arr[1] == "exit") {
-      clear();
       changeMenus("main");
     }
   }
@@ -226,10 +227,62 @@ void moveCursor(std::string dir) {
   }
 }
 
+std::string muse = "";
+bool museRead = false;
+
+void manageMouse(char c) {
+  int mx, my; // La posición del evento
+  int b; // El número del botón
+  bool h;
+  if (c == 27) { // Si detecta el código ASCII 27, comienza a captar el mouse
+    museRead = true;
+    return;
+  }
+  if (muse.size() > 32) { // Si excede los 32 bytes, se reinicia y detiene
+    muse = "";
+    museRead = false;
+  }
+  if (museRead) { // Añade cada carácter a 'muse'
+    muse += c;
+  }
+  if (c != 77 && c != 109) return; // Si no detecta una 'M'(77) ó 'm'(109) no continúa
+
+  museRead = false;
+  h = c == 77 ? true : false; // Si es 'M', está siendo presionado. Si es 'm', fue un click.
+  muse.back() = '\0'; // Elimina el último carácter
+  std::vector<std::string> splitted = split(muse, ";");
+  b = std::stoi(splitted[0]);
+  mx = std::stoi(splitted[1]);
+  my = std::stoi(splitted[2]);
+  // printf("%s\r\n", muse.c_str());
+  /*
+  if (b == 64 || b == 65) {
+    printf("%s  on  %dx, %dy\r\n", b == 64 ? "Swipe up" : "Swipe down", mx, my);
+  } else {
+    printf("%s  on  %dx, %dy  %s\r\n", b == 1 ? "Middle" : b == 0 ? "Left" : "Right click", mx, my, h ? "holding" : "clicked");
+  }*/
+
+  if (b == 64) {
+    moveCursor("up");
+  }
+  if (b == 65) {
+    moveCursor("down");
+  }
+
+  muse = "";
+}
+
 /* Procesa las teclas leídas y realiza sus respectivas acciones */
 void processKey() {
   char c = readKey();
-
+  manageMouse(c);
+  /*
+      if (iscntrl(c)) {
+      printf("%d\r\n", c);
+    } else {
+      printf("%d ('%c')\r\n", c, c);
+    }
+  */
   if (c == '\x1b') {
     char seq[3];
     if (read(STDIN_FILENO, &seq[0], 1) != 1) {}
