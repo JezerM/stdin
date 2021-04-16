@@ -71,13 +71,18 @@ class Menu: public Window {
     /* Renderiza el menú en pantalla */
     void render(struct abuf *ab) {
       update();
+      abAppend(ab, "\x1b[K", 3);
       abAppend(ab, name.c_str(), name.length());
       abAppend(ab, "\r\n", 2);
+      abAppend(ab, "\x1b[K", 3);
       abAppend(ab, desc.c_str(), desc.length());
-      abAppend(ab, "\r\n\r\n", 4);
+      abAppend(ab, "\r\n", 2);
+      abAppend(ab, "\x1b[K", 3);
+      abAppend(ab, "\r\n", 2);
 
       for (int i = 0; i < numberOptions; i++) {
         if (strcmp(options[i].name, "NULL") == 0) continue;
+        abAppend(ab, "\x1b[K", 3);
         abAppend(ab, std::string(indentSpace, ' ').c_str(), indentSpace);
         abAppend(ab, std::string(options[i].indentTimes*indentSpace, ' ').c_str(), options[i].indentTimes*indentSpace);
         if (actualPos == i) abAppend(ab, "\u001b[107;30m", 9);
