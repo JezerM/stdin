@@ -54,9 +54,16 @@ void clear() {
 
 /* Alerta ante cualquier error de este sistema */
 void die(const char *s) {
-  clear();
+  write(STDOUT_FILENO, "\x1b[?1049l", 8);
+  printf("\x1b[?25h");
   perror(s);
   exit(1);
+}
+
+void exitAll() {
+  write(STDOUT_FILENO, "\e[?1049l", 8);
+  printf("\x1b[?25h");
+  exit(0);
 }
 
 /* Desabilita el modo "Raw" */
@@ -80,8 +87,8 @@ void enableRawMode() {
   raw.c_oflag &= ~(OPOST);
   raw.c_cflag |= (CS8);
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-  write(STDOUT_FILENO, "\e[?1000h", 8);
-  write(STDOUT_FILENO, "\e[?1006h", 8);
+  write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
+  write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
     die("tcsetattr");
   } 
@@ -198,8 +205,7 @@ void manageMenus(std::string element) {
   std::vector<std::string> arr = split(element, "/");
   if (arr[0] == "main") { // Main Menu
     if (arr[1] == "exit") {
-      printf("\x1b[?25h");
-      exit(0);
+      exitAll();
     } else
     if (arr[1] == "first") {
       changeMenus("first");
@@ -298,9 +304,7 @@ void processKey() {
   }
 
   if (c == CTRL_KEY('q')) { // CTRL+Q
-    clear();
-    printf("\x1b[?25h");
-    exit(0);
+    exitAll();
   }
   if (c == 'k') {
     moveCursor("up");
@@ -355,9 +359,9 @@ void initMenus() {
   MenuOption first = {"First option", "first"};
   MenuOption other = {"Other option", "other"};
   MenuOption exi = {"Salir", "exit"};
-  mainMenu.options[0] = first;
-  mainMenu.options[1] = other;
-  mainMenu.options[2] = exi;
+  mainMenu.options.push_back(first);
+  mainMenu.options.push_back(other);
+  mainMenu.options.push_back(exi);
 
   mainMenu.gotoPos(0);
 
@@ -368,9 +372,9 @@ void initMenus() {
   MenuOption fa = {"Fa", "fa"};
   MenuOption ba = {"Ba", "ba", 1};
   MenuOption back = {"Atrás", "exit"};
-  firstMenu.options[0] = fa;
-  firstMenu.options[1] = ba;
-  firstMenu.options[2] = back;
+  firstMenu.options.push_back(fa);
+  firstMenu.options.push_back(ba);
+  firstMenu.options.push_back(back);
 
   listMenus.push_back(mainMenu);
   listMenus.push_back(firstMenu);
@@ -399,6 +403,8 @@ void init() {
   conf.cx = 0;
   conf.cy = 0;
   initMenus();
+  menu.update();
+  menu.gotoPos(0);
   if (getWindowSize(&conf.srows, &conf.scols) == -1) die("getWindowSize");
 }
 

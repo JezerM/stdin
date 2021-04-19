@@ -7,6 +7,8 @@
 
 extern struct winConfig conf;
 
+int getWindowSize(int *rows, int *cols);
+
 /*** Menus ***/
 
 /* Estructura para crear opciones de menú */
@@ -25,8 +27,12 @@ class Window {
   public:
     std::string id;
     std::string name;
+    std::string desc;
+    int actualPos = 0;
+    std::vector<MenuOption> options;
 
     Window(std::string ida) {
+      options.reserve(10);
       id = ida;
     }
 
@@ -45,27 +51,29 @@ class Menu: public Window {
     std::string desc;
     int indentSpace = 4;
     int actualPos = 0;
-    static const int numberOptions = 10;
-    MenuOption options[numberOptions];
     winConfig *confi; // Si ocurren errores al mover el cursor, posiblemente sea por no usar esto
 
     Menu(std::string ida, struct winConfig *co) : Window(ida) {
       confi = co;
-      for (int i = 0; i < numberOptions ; i++) {
+      for (int i = 0; i < options.size() ; i++) {
         options[i] = nullOption;
       }
     }
 
     /* Actualiza las opciones y sus datos */
     void update() {
+      getWindowSize(&conf.srows, &conf.scols);
       int posx = indentSpace;
       int posy = 3;
-      for (int i = 0; i < numberOptions; i++) {
-        if (strcmp(options[i].name, "NULL") == 0) continue;
+
+      posy += desc.size() / conf.scols;
+
+      for (int i = 0; i < options.size(); i++) {
         options[i].posx = posx;
         options[i].posy = posy;
         posy++;
       }
+      gotoPos(actualPos);
     }
 
     /* Renderiza el menú en pantalla */
@@ -80,8 +88,12 @@ class Menu: public Window {
       abAppend(ab, "\x1b[K", 3);
       abAppend(ab, "\r\n", 2);
 
-      for (int i = 0; i < numberOptions; i++) {
-        if (strcmp(options[i].name, "NULL") == 0) continue;
+      for (int i = 0; i < options.capacity(); i++) {
+        if (i >= options.size()) {
+          abAppend(ab, "\x1b[K", 3);
+          continue;
+        }
+        // if (strcmp(options[i].name, "NULL") == 0) continue;
         abAppend(ab, "\x1b[K", 3);
         abAppend(ab, std::string(indentSpace, ' ').c_str(), indentSpace);
         abAppend(ab, std::string(options[i].indentTimes*indentSpace, ' ').c_str(), options[i].indentTimes*indentSpace);
@@ -95,7 +107,7 @@ class Menu: public Window {
     /* Mueve el cursor entre las opciones del menú */
     void gotoPos(int pos) {
       if (pos < 0) return;
-      if (pos > numberOptions - 1) return;
+      if (pos > options.size() - 1) return;
       if (strcmp(options[pos].name, "NULL") == 0) return;
       actualPos = pos;
       conf.cx = options[pos].posx;
