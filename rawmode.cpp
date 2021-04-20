@@ -21,6 +21,9 @@
 
 struct winConfig conf;
 
+
+struct abuf ab = ABUF_INIT;
+
 /*** terminal ***/
 
 /* Añade carácteres con una determinada longitud
@@ -44,6 +47,10 @@ void abAppend(struct abuf *ab, const char *s, int len) {
 /* Libera el "caché" del buffer *ab* */
 void abFree(struct abuf *ab) {
   free(ab->b);
+}
+
+void abWrite(std::string s) {
+  abAppend(&ab, s.c_str(), s.size());
 }
 
 /* Limpia la pantalla */
@@ -382,7 +389,7 @@ void initMenus() {
 
 /* Actualiza la pantalla */
 void refreshScreen() {
-  struct abuf ab = ABUF_INIT;
+  ab = ABUF_INIT;
 
   abAppend(&ab, "\x1b[?25l", 6);
   abAppend(&ab, "\x1b[H", 3);

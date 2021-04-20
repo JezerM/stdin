@@ -79,28 +79,31 @@ class Menu: public Window {
     /* Renderiza el menú en pantalla */
     void render(struct abuf *ab) {
       update();
-      abAppend(ab, "\x1b[K", 3);
-      abAppend(ab, name.c_str(), name.length());
-      abAppend(ab, "\r\n", 2);
-      abAppend(ab, "\x1b[K", 3);
-      abAppend(ab, desc.c_str(), desc.length());
-      abAppend(ab, "\r\n", 2);
-      abAppend(ab, "\x1b[K", 3);
-      abAppend(ab, "\r\n", 2);
+      std::string neimu = "\x1b[K" + name + "\r\n";
+      std::string desci = "\x1b[K" + desc + "\r\n\x1b[K\r\n";
+      abWrite(neimu);
+      abWrite(desci);
+
+      std::string symb = "\u001b[1;94m❯ \u001b[0m";
 
       for (int i = 0; i < options.capacity(); i++) {
         if (i >= options.size()) {
-          abAppend(ab, "\x1b[K", 3);
+          abWrite("\x1b[K");
           continue;
         }
         // if (strcmp(options[i].name, "NULL") == 0) continue;
-        abAppend(ab, "\x1b[K", 3);
-        abAppend(ab, std::string(indentSpace, ' ').c_str(), indentSpace);
-        abAppend(ab, std::string(options[i].indentTimes*indentSpace, ' ').c_str(), options[i].indentTimes*indentSpace);
-        if (actualPos == i) abAppend(ab, "\u001b[107;30m", 9);
-        abAppend(ab, options[i].name, sizeof(options[i].name));
-        if (actualPos == i) abAppend(ab, "\u001b[0m", 4);
-        abAppend(ab, "\r\n", 2);
+        abWrite("\x1b[K");
+        std::string inden = std::string(indentSpace-2, ' ');
+        abWrite(inden);
+        if (actualPos == i) {
+          abWrite(symb);
+          abWrite("\u001b[1;94m");
+        }
+        else abWrite(std::string(2, ' '));
+        abWrite(std::string(options[i].indentTimes * indentSpace, ' '));
+        abWrite(std::string(options[i].name));
+        if (actualPos == i) abWrite("\u001b[0m");
+        abWrite("\r\n");
       }
     }
 

@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 #ifndef BUFF_H
 #define BUFF_H 1 // Estos son guards para evitar múltiples declaraciones
@@ -19,5 +20,7 @@ struct abuf {
 void abAppend(struct abuf *ab, const char *s, int len);
 
 void abFree(struct abuf *ab);
+
+void abWrite(std::string s);
 
 #endif
