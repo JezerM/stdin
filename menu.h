@@ -5,6 +5,9 @@
 #include "winConf.h"
 #include "buff.h"
 
+#ifndef MENU_H
+#define MENU_H 1 // Estos son guards para evitar múltiples declaraciones
+
 extern struct winConfig conf;
 
 int getWindowSize(int *rows, int *cols);
@@ -79,7 +82,8 @@ class Menu: public Window {
     /* Renderiza el menú en pantalla */
     void render(struct abuf *ab) {
       update();
-      std::string neimu = "\x1b[K" + name + "\r\n";
+      std::string mag = "\x1b[1;95m";
+      std::string neimu = "\x1b[K" + mag + name + "\x1b[0m" + "\r\n";
       std::string desci = "\x1b[K" + desc + "\r\n\x1b[K\r\n";
       abWrite(neimu);
       abWrite(desci);
@@ -123,4 +127,6 @@ class Timer: public Window {
     time_t time;
 
 };
+extern Menu menu;
 
+#endif

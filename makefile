@@ -9,7 +9,7 @@ FLAGS := -pthread
 TARGET := test
 
 # File sources
-SOURCES := main.cpp rawmode.cpp
+SOURCES := main.cpp rawmode.cpp behavior.cpp buff.cpp
 HEADERS := buff.h winConf.h menu.h
 
 

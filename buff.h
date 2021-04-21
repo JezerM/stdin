@@ -15,7 +15,10 @@ struct abuf {
   int len; // Longitud o tamaño de carácteres
 };
 
+
 #define ABUF_INIT {NULL, 0}
+
+extern struct abuf ab;
 
 void abAppend(struct abuf *ab, const char *s, int len);
 
