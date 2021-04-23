@@ -55,8 +55,8 @@ Cuando una tecla es recibida, `processKey` se encarga de hacer lo necesario. Si 
 Este último realiza la interacción con el menú. Recibe el `id` tanto del menú actual como de la opción actual (o bien cualquier otra opción). Así, luego sólo se efectúan las acciones según la opción.
 
 ```c++
-manageMenus(menu.id + "/exit"); // Regresa al menú anterior
+manageMenus(menu->id + "/exit"); // Regresa al menú anterior
 manageMenus("main/exit"); // Cierra el programa
-string element = menu.id + "/" + menu.options[menu.actualPos].id;
+string element = menu->id + "/" + menu->options[menu->actualPos].id;
 manageMenus(element); // Envía la opción actual, y hace lo que tenga que hacer
 ``
