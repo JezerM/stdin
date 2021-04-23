@@ -15,9 +15,10 @@
 void exitAll();
 char readKey();
 
-static std::vector<Menu> listMenus;
-static Menu mainMenu("main", &conf);
-static Menu firstMenu("first", &conf);
+std::vector<Window*> listMenus;
+Menu *mainMenu = new Menu("main", &conf);
+Menu *firstMenu = new Menu("first", &conf);
+Timer *tempo = new Timer("timer", &conf);
 
 /* Realiza una división de *text* por cada *del*
  * @return vector<string>
@@ -40,7 +41,7 @@ std::vector<std::string> split(std::string text, std::string del = " ") {
 int getActualMenuIndex() {
   int ind = 0;
   for (int i = 0; i < listMenus.size(); i++) {
-    if (listMenus[i].id == menu.id) {
+    if (listMenus[i]->id == menu->id) {
       ind = i; break;
     }
   }
@@ -51,11 +52,32 @@ int getActualMenuIndex() {
 int getMenuIndex(std::string id) {
   int ind = -1;
   for (int i = 0; i < listMenus.size(); i++) {
-    if (listMenus[i].id == id) {
+    if (listMenus[i]->id == id) {
       ind = i; break;
     }
   }
   return ind;
+}
+
+/* Esta cosa sirve para cambiar los menús de forma correcta... Espero... */
+void swapMenu(int actualInd, int ind) {
+  if (menu->type == "Window") {
+    listMenus[actualInd] = (Window*) menu;
+  } else if (menu->type == "Menu") {
+    listMenus[actualInd] = (Menu*) menu;
+  } else if (menu->type == "Timer") {
+    listMenus[actualInd] = (Timer*) menu;
+  }
+
+  if (listMenus[ind]->type == "Window") {
+    menu = (Window*) listMenus[ind];
+  } else
+  if (listMenus[ind]->type == "Menu") {
+    menu = (Menu*) listMenus[ind];
+  } else
+  if (listMenus[ind]->type == "Timer") {
+    menu = (Timer*) listMenus[ind];
+  }
 }
 
 /* Cambia el menú según el índice.
@@ -63,18 +85,16 @@ int getMenuIndex(std::string id) {
 void changeMenus(int ind) {
   if (ind >= listMenus.size()) return;
   int actualInd = getActualMenuIndex();
-  listMenus[actualInd] = menu;
-  menu = listMenus[ind];
+  swapMenu(actualInd, ind);
 }
 
 /* Cambia el menú según el id.
  * Si el id no existe en la lista, no se hará nada.*/
 void changeMenus(std::string id) {
-  int menuInd = getMenuIndex(id);
-  if (menuInd == -1) return;
+  int ind = getMenuIndex(id);
+  if (ind == -1) {printf("NOPE!\r\n"); return;};
   int actualInd = getActualMenuIndex();
-  listMenus[actualInd] = menu;
-  menu = listMenus[menuInd];
+  swapMenu(actualInd, ind);
 }
 
 /* Aquí se manejarán las opciones y sus acciones */
@@ -86,9 +106,17 @@ void manageMenus(std::string element) {
     } else
     if (arr[1] == "first") {
       changeMenus("first");
+    } else
+    if (arr[1] == "timer") {
+      changeMenus("timer");
     }
   } else
   if (arr[0] == "first") { // First Menu
+    if (arr[1] == "exit") {
+      changeMenus("main");
+    }
+  } else
+  if (arr[0] == "timer") {
     if (arr[1] == "exit") {
       changeMenus("main");
     }
@@ -99,20 +127,21 @@ void manageMenus(std::string element) {
 /* Mueve el cursor */
 void moveCursor(std::string dir) {
   if (dir == "left") {
-    if (menu.id != "main")
-    manageMenus(menu.id + "/exit");
+    if (menu->id != "main")
+    manageMenus(menu->id + "/exit");
   } else if (dir == "right") {
-    manageMenus(menu.id + "/" + menu.options[menu.actualPos].id);
+    manageMenus(menu->id + "/" + menu->options[menu->actualPos].id);
   } else if (dir == "up") {
-      menu.gotoPos(menu.actualPos-1);
+      menu->gotoPos((menu->actualPos) - 1);
   } else if (dir == "down") {
-      menu.gotoPos(menu.actualPos+1);
+      menu->gotoPos((menu->actualPos) + 1);
   }
 }
 
 std::string muse = "";
 bool museRead = false;
 
+/* Obtiene una serie de carácteres y determina si es una interacción con el mouse para así manejar la misma */
 void manageMouse(char c) {
   int mx, my; // La posición del evento
   int b; // El número del botón
@@ -158,14 +187,14 @@ void manageMouse(char c) {
 /* Procesa las teclas leídas y realiza sus respectivas acciones */
 void processKey() {
   char c = readKey();
-  manageMouse(c);
   /*
-      if (iscntrl(c)) {
-      printf("%d\r\n", c);
-    } else {
-      printf("%d ('%c')\r\n", c, c);
-    }
+  if (iscntrl(c)) {
+    printf("%d\r\n", c);
+  } else {
+    printf("%d ('%c')\r\n", c, c);
+  }
   */
+  manageMouse(c);
   if (c == '\x1b') {
     char seq[3];
     if (read(STDIN_FILENO, &seq[0], 1) != 1) {}
@@ -179,54 +208,57 @@ void processKey() {
       }
     }
   }
-
   if (c == CTRL_KEY('q')) { // CTRL+Q
     exitAll();
-  }
+  } else
   if (c == 'k') {
     moveCursor("up");
-  }
+  } else
   if (c == 'j') {
     moveCursor("down");
-  }
+  } else
   if (c == 'l') {
     moveCursor("right");
-  }
+  } else
   if (c == 'h') {
     moveCursor("left");
-  }
+  } else
   if (c == 13) { // "Return" key
-    std::string element = menu.id + "/" + menu.options[menu.actualPos].id;
+    std::string element = menu->id + "/" + menu->options[menu->actualPos].id;
     manageMenus(element);
   }
 }
 
 /* Aquí se especificaran los menús y sus opciones */
 void initMenus() {
-  mainMenu.name = "Testing Interface";
-  mainMenu.desc = "Use arrows or hjkl to move. CTRL+Q to close the program. Press Enter to select the option.";
+  mainMenu->name = "Testing Interface";
+  mainMenu->desc = "Use arrows or hjkl to move. CTRL+Q to close the program. Press Enter to select the option.";
 
   MenuOption first = {"First option", "first"};
-  MenuOption other = {"Other option", "other"};
+  MenuOption other = {"Tempo", "timer"};
   MenuOption exi = {"Salir", "exit"};
-  mainMenu.options.push_back(first);
-  mainMenu.options.push_back(other);
-  mainMenu.options.push_back(exi);
+  mainMenu->options.push_back(first);
+  mainMenu->options.push_back(other);
+  mainMenu->options.push_back(exi);
 
-  mainMenu.gotoPos(0);
+  mainMenu->gotoPos(0);
 
   menu = mainMenu;
 
-  firstMenu.name = "This is the first menu, not the main";
-  firstMenu.desc = "Just that...";
+  firstMenu->name = "This is the first menu, not the main";
+  firstMenu->desc = "Just that...";
   MenuOption fa = {"Fa", "fa"};
   MenuOption ba = {"Ba", "ba", 1};
   MenuOption back = {"Atrás", "exit"};
-  firstMenu.options.push_back(fa);
-  firstMenu.options.push_back(ba);
-  firstMenu.options.push_back(back);
+  firstMenu->options.push_back(fa);
+  firstMenu->options.push_back(ba);
+  firstMenu->options.push_back(back);
+
+  tempo->name = "Temporizador";
+  tempo->desc = "Esto es una prueba del temporizador";
 
   listMenus.push_back(mainMenu);
   listMenus.push_back(firstMenu);
+  listMenus.push_back(tempo);
 }
 
