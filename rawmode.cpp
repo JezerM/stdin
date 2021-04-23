@@ -19,7 +19,7 @@
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 struct winConfig conf;
-Menu menu("", &conf);
+Window *menu = new Window("");
 
 void initMenus();
 
@@ -62,13 +62,23 @@ void enableRawMode() {
   }
   atexit(disableRawMode);
 
-  struct termios raw = conf.orig_termios;
+  struct termios raw = conf.orig_termios; // Modifica el modo original
+  /* Input modes: no break, no CR to NL, no parity check, no strip char,
+   * no start/stop output control*/
   raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+  /* Output modes: disable post processing */
   raw.c_oflag &= ~(OPOST);
+  /* Control modes: set 8 bit characters */
   raw.c_cflag |= (CS8);
+  /* Local modes: choing off, canonical off, no extended functions,
+   * no signal characters (^Z, ^C)*/
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-  write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
-  write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
+  /* Control chars: set return condition of min number of bytes and timer */
+  raw.c_cc[VMIN] = 0; // Especifica el tamaño a obtener para enviar un resultado a read
+  raw.c_cc[VTIME] = 2; // El tiempo en milisegundos a esperar para enviar el resultado a read
+
+  //write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
+  //write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
     die("tcsetattr");
   } 
@@ -77,10 +87,9 @@ void enableRawMode() {
 /* Espera hasta obtener una tecla y la regresa */
 char readKey() {
   int nread;
-  char c;
-  while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
+  char c = '\0';
+  nread = read(STDIN_FILENO,&c,1) == 0;
     if (nread == -1 && errno != EAGAIN) die("read");
-  }
   return c;
 }
 
@@ -150,7 +159,7 @@ void refreshScreen() {
   abAppend(&ab, "\x1b[?25l", 6);
   abAppend(&ab, "\x1b[H", 3);
 
-  menu.render(&ab);
+  menu->render();
 
   char buf[32];
   snprintf(buf, sizeof(buf), "\x1b[%d;%dH", conf.cy+1,conf.cx+1);
