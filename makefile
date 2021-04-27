@@ -12,8 +12,10 @@ TARGET := test
 SOURCES := main.cpp rawmode.cpp behavior.cpp buff.cpp
 HEADERS := buff.h winConf.h menu.h
 
-
 compile:
 	@echo "Compilando..."
 	${CC} ${SOURCES} ${HEADERS} -o ${TARGET} ${VER} ${FLAGS}
 	@echo "Terminado."
+
+run:
+	@./${TARGET}
