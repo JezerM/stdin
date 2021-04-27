@@ -19,7 +19,7 @@
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 struct winConfig conf;
-Window *menu = new Window("");
+Window *win = new Window("");
 
 void initMenus();
 
@@ -77,8 +77,8 @@ void enableRawMode() {
   raw.c_cc[VMIN] = 0; // Especifica el tamaño a obtener para enviar un resultado a read
   raw.c_cc[VTIME] = 2; // El tiempo en milisegundos a esperar para enviar el resultado a read
 
-  //write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
-  //write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
+  write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
+  write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
     die("tcsetattr");
   } 
@@ -159,7 +159,7 @@ void refreshScreen() {
   abAppend(&ab, "\x1b[?25l", 6);
   abAppend(&ab, "\x1b[H", 3);
 
-  menu->render();
+  win->render();
 
   char buf[32];
   snprintf(buf, sizeof(buf), "\x1b[%d;%dH", conf.cy+1,conf.cx+1);

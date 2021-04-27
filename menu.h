@@ -109,7 +109,7 @@ class Menu: public Window {
 
       for (int i = 0; i < options.capacity(); i++) {
         if (i >= options.size()) {
-          abWrite("\x1b[K");
+          abWrite("\x1b[K\r\n");
           continue;
         }
         // if (strcmp(options[i].name, "NULL") == 0) continue;
@@ -164,6 +164,7 @@ class Timer: public Window {
     }
 
     virtual void render() override {
+      getWindowSize(&conf.srows, &conf.scols);
       // std::future<void> hand = std::async(std::launch::async, &Timer::update, this);
        if (!running) std::make_unique<std::future<void>*>(new auto(std::async(std::launch::async, &Timer::update, this))).reset();
       std::string mag = "\x1b[1;95m";
@@ -173,10 +174,11 @@ class Timer: public Window {
       abWrite(desci);
       char time[13];
       sprintf(time, "%.2d : %.2d : %.2d", hours, minutes, seconds);
-      abWrite("\x1b[K" + std::string(time) + "\r\n");
+      std::string sp = std::string(conf.scols/2 - 6, ' ');
+      abWrite("\x1b[K" + sp + std::string(time) + "\r\n");
       abWrite("\x1b[J");
     }
 };
-extern Window *menu;
+extern Window *win;
 
 #endif

@@ -41,7 +41,7 @@ std::vector<std::string> split(std::string text, std::string del = " ") {
 int getActualMenuIndex() {
   int ind = 0;
   for (int i = 0; i < listMenus.size(); i++) {
-    if (listMenus[i]->id == menu->id) {
+    if (listMenus[i]->id == win->id) {
       ind = i; break;
     }
   }
@@ -61,22 +61,22 @@ int getMenuIndex(std::string id) {
 
 /* Esta cosa sirve para cambiar los menús de forma correcta... Espero... */
 void swapMenu(int actualInd, int ind) {
-  if (menu->type == "Window") {
-    listMenus[actualInd] = (Window*) menu;
-  } else if (menu->type == "Menu") {
-    listMenus[actualInd] = (Menu*) menu;
-  } else if (menu->type == "Timer") {
-    listMenus[actualInd] = (Timer*) menu;
+  if (win->type == "Window") {
+    listMenus[actualInd] = (Window*) win;
+  } else if (win->type == "Menu") {
+    listMenus[actualInd] = (Menu*) win;
+  } else if (win->type == "Timer") {
+    listMenus[actualInd] = (Timer*) win;
   }
 
   if (listMenus[ind]->type == "Window") {
-    menu = (Window*) listMenus[ind];
+    win = (Window*) listMenus[ind];
   } else
   if (listMenus[ind]->type == "Menu") {
-    menu = (Menu*) listMenus[ind];
+    win = (Menu*) listMenus[ind];
   } else
   if (listMenus[ind]->type == "Timer") {
-    menu = (Timer*) listMenus[ind];
+    win = (Timer*) listMenus[ind];
   }
 }
 
@@ -127,14 +127,14 @@ void manageMenus(std::string element) {
 /* Mueve el cursor */
 void moveCursor(std::string dir) {
   if (dir == "left") {
-    if (menu->id != "main")
-    manageMenus(menu->id + "/exit");
+    if (win->id != "main")
+    manageMenus(win->id + "/exit");
   } else if (dir == "right") {
-    manageMenus(menu->id + "/" + menu->options[menu->actualPos].id);
+    manageMenus(win->id + "/" + win->options[win->actualPos].id);
   } else if (dir == "up") {
-      menu->gotoPos((menu->actualPos) - 1);
+      win->gotoPos((win->actualPos) - 1);
   } else if (dir == "down") {
-      menu->gotoPos((menu->actualPos) + 1);
+      win->gotoPos((win->actualPos) + 1);
   }
 }
 
@@ -163,6 +163,7 @@ void manageMouse(char c) {
   h = c == 77 ? true : false; // Si es 'M', está siendo presionado. Si es 'm', fue un click.
   muse.back() = '\0'; // Elimina el último carácter
   std::vector<std::string> splitted = split(muse, ";");
+  if (splitted.size() != 3) {return;}
   b = std::stoi(splitted[0]);
   mx = std::stoi(splitted[1]);
   my = std::stoi(splitted[2]);
@@ -193,6 +194,7 @@ void processKey() {
   } else {
     printf("%d ('%c')\r\n", c, c);
   }
+  return;
   */
   manageMouse(c);
   if (c == '\x1b') {
@@ -224,41 +226,40 @@ void processKey() {
     moveCursor("left");
   } else
   if (c == 13) { // "Return" key
-    std::string element = menu->id + "/" + menu->options[menu->actualPos].id;
+    std::string element = win->id + "/" + win->options[win->actualPos].id;
     manageMenus(element);
   }
 }
 
 /* Aquí se especificaran los menús y sus opciones */
 void initMenus() {
-  mainMenu->name = "Testing Interface";
-  mainMenu->desc = "Use arrows or hjkl to move. CTRL+Q to close the program. Press Enter to select the option.";
-
-  MenuOption first = {"First option", "first"};
-  MenuOption other = {"Tempo", "timer"};
-  MenuOption exi = {"Salir", "exit"};
-  mainMenu->options.push_back(first);
-  mainMenu->options.push_back(other);
-  mainMenu->options.push_back(exi);
+  mainMenu->name = "Tasky";
+  mainMenu->desc = "Muévete con las flechas de dirección o con hjkl. Presiona Enter para elegir la opción.";
+  mainMenu->options = {
+    MenuOption {"Lista de tareas", "first"},
+    MenuOption {"Temporizador", "timer"},
+    MenuOption {"Salir", "exit"},
+  };
 
   mainMenu->gotoPos(0);
 
-  menu = mainMenu;
+  win = mainMenu;
 
   firstMenu->name = "This is the first menu, not the main";
   firstMenu->desc = "Just that...";
-  MenuOption fa = {"Fa", "fa"};
-  MenuOption ba = {"Ba", "ba", 1};
-  MenuOption back = {"Atrás", "exit"};
-  firstMenu->options.push_back(fa);
-  firstMenu->options.push_back(ba);
-  firstMenu->options.push_back(back);
+  firstMenu->options = {
+    MenuOption {"Primera opción", "fa"},
+    //MenuOption {"Con sangría!", "ba", 1},
+    MenuOption {"Atrás", "exit"},
+  };
 
   tempo->name = "Temporizador";
   tempo->desc = "Esto es una prueba del temporizador";
 
-  listMenus.push_back(mainMenu);
-  listMenus.push_back(firstMenu);
-  listMenus.push_back(tempo);
+  listMenus = {
+    mainMenu,
+    firstMenu,
+    tempo,
+  };
 }
 
