@@ -3,10 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-#include <termios.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/ioctl.h>
 
 #include "menu.h"
 
@@ -188,14 +186,11 @@ void manageMouse(char c) {
 /* Procesa las teclas leídas y realiza sus respectivas acciones */
 void processKey() {
   char c = readKey();
-  /*
   if (iscntrl(c)) {
     printf("%d\r\n", c);
   } else {
     printf("%d ('%c')\r\n", c, c);
   }
-  return;
-  */
   manageMouse(c);
   if (c == '\x1b') {
     char seq[3];
@@ -227,8 +222,9 @@ void processKey() {
   } else
   if (c == 13) { // "Return" key
     std::string element = win->id + "/" + win->options[win->actualPos].id;
-    manageMenus(element);
+    //manageMenus(element);
   }
+  return;
 }
 
 /* Aquí se especificaran los menús y sus opciones */

@@ -2,7 +2,7 @@ all: compile
 
 # The compiler to use
 CC := g++
-VER := #-std=c++11
+VER := -std=c++14
 FLAGS := -pthread
 
 # Target file
@@ -14,7 +14,7 @@ HEADERS := buff.h winConf.h menu.h
 
 compile:
 	@echo "Compilando..."
-	${CC} ${SOURCES} ${HEADERS} -o ${TARGET} ${VER} ${FLAGS}
+	${CC} ${SOURCES} ${HEADERS} -o ${TARGET} ${VER} ${FLAGS} -I mingw-std-threads/
 	@echo "Terminado."
 
 run:
