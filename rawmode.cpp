@@ -232,7 +232,7 @@ void refreshScreen() {
   snprintf(buf, sizeof(buf), "\x1b[%d;%dH", conf.cy+1,conf.cx+1);
   abAppend(&ab, buf, strlen(buf));
 
-  //write(STDOUT_FILENO, ab.b, ab.len);
+  write(STDOUT_FILENO, ab.b, ab.len);
   abFree(&ab);
 }
 
