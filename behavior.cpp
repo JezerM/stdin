@@ -9,26 +9,29 @@
 #include <sys/ioctl.h>
 
 #include "menu.h"
+#include "buff.h"
 
 #define CTRL_KEY(k) ((k) & 0x1f)
+
+using namespace std;
 
 void exitAll();
 char readKey();
 
-std::vector<Window*> listMenus;
-Menu *mainMenu = new Menu("main", &conf);
-Menu *firstMenu = new Menu("first", &conf);
-Timer *tempo = new Timer("timer", &conf);
+vector<Window*> listMenus;
+struct Window mainMenu;
+struct Window firstMenu;
+struct Timer tempo;
 
 /* Realiza una división de *text* por cada *del*
  * @return vector<string>
  */
-std::vector<std::string> split(std::string text, std::string del = " ") {
-  std::vector<std::string> arr;
+vector<string> split(string text, string del = " ") {
+  vector<string> arr;
   int start = 0;
   int end = text.find(del);
   while (end != -1) {
-    std::string s = text.substr(start, end - start);
+    string s = text.substr(start, end - start);
     start = end + del.size();
     end = text.find(del, start);
     arr.push_back(s);
@@ -37,64 +40,10 @@ std::vector<std::string> split(std::string text, std::string del = " ") {
   return arr;
 }
 
-/* Obtiene el índice del menú actual */
-int getActualMenuIndex() {
-  int ind = 0;
-  for (int i = 0; i < listMenus.size(); i++) {
-    if (listMenus[i]->id == win->id) {
-      ind = i; break;
-    }
-  }
-  return ind;
-}
-
-/* Obtiene el índice del menú según el id */
-int getMenuIndex(std::string id) {
-  int ind = -1;
-  for (int i = 0; i < listMenus.size(); i++) {
-    if (listMenus[i]->id == id) {
-      ind = i; break;
-    }
-  }
-  return ind;
-}
-
-/* Esta cosa sirve para cambiar los menús de forma correcta... Espero... */
-void swapMenu(int actualInd, int ind) {
-  if (win->type == "Window") {
-    listMenus[actualInd] = (Window*) win;
-  } else if (win->type == "Menu") {
-    listMenus[actualInd] = (Menu*) win;
-  } else if (win->type == "Timer") {
-    listMenus[actualInd] = (Timer*) win;
-  }
-
-  if (listMenus[ind]->type == "Window") {
-    win = (Window*) listMenus[ind];
-  } else
-  if (listMenus[ind]->type == "Menu") {
-    win = (Menu*) listMenus[ind];
-  } else
-  if (listMenus[ind]->type == "Timer") {
-    win = (Timer*) listMenus[ind];
-  }
-}
-
-/* Cambia el menú según el índice.
- * Si el índice excede el tamaño de la lista, no se hará nada.*/
 void changeMenus(int ind) {
-  if (ind >= listMenus.size()) return;
-  int actualInd = getActualMenuIndex();
-  swapMenu(actualInd, ind);
-}
-
-/* Cambia el menú según el id.
- * Si el id no existe en la lista, no se hará nada.*/
-void changeMenus(std::string id) {
-  int ind = getMenuIndex(id);
-  if (ind == -1) {printf("NOPE!\r\n"); return;};
-  int actualInd = getActualMenuIndex();
-  swapMenu(actualInd, ind);
+  if (ind < 0) return;
+  if (ind > listMenus.size() - 1) return;
+  conf.actualMenu = ind;
 }
 
 /* Aquí se manejarán las opciones y sus acciones */
@@ -105,36 +54,100 @@ void manageMenus(std::string element) {
       exitAll();
     } else
     if (arr[1] == "first") {
-      changeMenus("first");
+      changeMenus(1);
     } else
     if (arr[1] == "timer") {
-      changeMenus("timer");
+      changeMenus(2);
     }
   } else
   if (arr[0] == "first") { // First Menu
     if (arr[1] == "exit") {
-      changeMenus("main");
+      changeMenus(0);
     }
   } else
   if (arr[0] == "timer") {
     if (arr[1] == "exit") {
-      changeMenus("main");
+      changeMenus(0);
     }
   }
-
 }
 
+/* Renderiza el menú */
+void render_Menu(struct Window *menu) {
+  string mag = "\x1b[1;95m";
+  string clLine = "\x1b[K";
+  string neimu = clLine + mag + menu->name + "\x1b[0m" + "\r\n";
+  string desci = clLine + menu->desc + "\r\n\x1b[K\r\n";
+  abWrite(neimu);
+  abWrite(desci);
+
+  std::string symb = "\u001b[1;94m\u276F \u001b[0m";
+
+  for (int i = 0; i < menu->options.capacity(); i++) {
+    if (i >= menu->options.size()) {
+      abWrite("\x1b[K\r\n");
+      continue;
+    }
+    // if (strcmp(options[i].name, "NULL") == 0) continue;
+    abWrite("\x1b[K");
+    string inden = string(menu->indentSpace-2, ' ');
+    abWrite(inden);
+    if (menu->actualPos == i) {
+      abWrite(symb);
+      abWrite("\u001b[1;94m");
+    }
+    else abWrite(string(2, ' '));
+    abWrite(string(menu->options[i].indentTimes * menu->indentSpace, ' '));
+    abWrite(string(menu->options[i].name));
+    abWrite("\u001b[0m");
+    abWrite("\r\n");
+  }
+  //abWrite("AAA " + to_string(menu.options.capacity()));
+  abWrite("\x1b[J");
+}
+
+void runTimer(struct Timer *timer);
+
+/* Renderiza el temporizador */
+void render_Temp(struct Timer *menu) {
+  // std::future<void> hand = std::async(std::launch::async, &Timer::update, this);
+  if (!menu->running) std::make_unique<std::future<void>*>(new auto(std::async(std::launch::async, runTimer, menu))).reset();
+  string mag = "\x1b[1;95m";
+  string clLine = "\x1b[K";
+  string neimu = clLine + mag + menu->name + "\x1b[0m" + "\r\n";
+  string desci = clLine + menu->desc + "\r\n\x1b[K\r\n";
+  abWrite(neimu);
+  abWrite(desci);
+  char time[13];
+  sprintf(time, "%.2d : %.2d : %.2d", menu->hours, menu->minutes, menu->seconds);
+  string sp = string(conf.scols/2 - 7, ' ');
+  abWrite("\x1b[K" + sp + string(time) + "\r\n");
+  abWrite("\x1b[J");
+}
+
+/* Cambia la posición actual del menú actual */
+void gotoPos(int pos) {
+  auto act = listMenus[conf.actualMenu];
+  if (pos < 0) return;
+  if (pos > act->options.size() - 1) return;
+  act->actualPos = pos;
+  conf.cx = act->options[pos].posx;
+  conf.cy = act->options[pos].posy;
+}
+ 
 /* Mueve el cursor */
-void moveCursor(std::string dir) {
+void moveCursor(string dir) {
+  auto act = listMenus[conf.actualMenu];
   if (dir == "left") {
-    if (win->id != "main")
-    manageMenus(win->id + "/exit");
+    if (string(act->id) != "main")
+    manageMenus(string(act->id) + "/exit");
   } else if (dir == "right") {
-    manageMenus(win->id + "/" + win->options[win->actualPos].id);
+    string element = string(act->id) + "/" + act->options[act->actualPos].id;
+    manageMenus(element);
   } else if (dir == "up") {
-      win->gotoPos((win->actualPos) - 1);
+    gotoPos(listMenus[conf.actualMenu]->actualPos - 1);
   } else if (dir == "down") {
-      win->gotoPos((win->actualPos) + 1);
+    gotoPos(listMenus[conf.actualMenu]->actualPos + 1);
   }
 }
 
@@ -162,11 +175,11 @@ void manageMouse(char c) {
   museRead = false;
   h = c == 77 ? true : false; // Si es 'M', está siendo presionado. Si es 'm', fue un click.
   muse.back() = '\0'; // Elimina el último carácter
-  std::vector<std::string> splitted = split(muse, ";");
+  vector<string> splitted = split(muse, ";");
   if (splitted.size() != 3) {return;}
-  b = std::stoi(splitted[0]);
-  mx = std::stoi(splitted[1]);
-  my = std::stoi(splitted[2]);
+  b = stoi(splitted[0]);
+  mx = stoi(splitted[1]);
+  my = stoi(splitted[2]);
   // printf("%s\r\n", muse.c_str());
   /*
   if (b == 64 || b == 65) {
@@ -226,40 +239,44 @@ void processKey() {
     moveCursor("left");
   } else
   if (c == 13) { // "Return" key
-    std::string element = win->id + "/" + win->options[win->actualPos].id;
+    auto act = listMenus[conf.actualMenu];
+    string element = string(act->id) + "/" + act->options[act->actualPos].id;
     manageMenus(element);
   }
 }
 
 /* Aquí se especificaran los menús y sus opciones */
 void initMenus() {
-  mainMenu->name = "Tasky";
-  mainMenu->desc = "Muévete con las flechas de dirección o con hjkl. Presiona Enter para elegir la opción.";
-  mainMenu->options = {
+  strcpy(mainMenu.name, "Tasky");
+  strcpy(mainMenu.id, "main");
+  strcpy(mainMenu.desc, "Muévete con las flechas de dirección o con hjkl. Presiona Enter para elegir la opción.");
+  mainMenu.options = {
     MenuOption {"Lista de tareas", "first"},
     MenuOption {"Temporizador", "timer"},
     MenuOption {"Salir", "exit"},
   };
+  mainMenu.options.reserve(10);
 
-  mainMenu->gotoPos(0);
-
-  win = mainMenu;
-
-  firstMenu->name = "This is the first menu, not the main";
-  firstMenu->desc = "Just that...";
-  firstMenu->options = {
+  strcpy(firstMenu.name, "This is the first menu, not the main");
+  strcpy(firstMenu.id, "first");
+  strcpy(firstMenu.desc, "Just that...");
+  firstMenu.options.reserve(10);
+  firstMenu.options = {
     MenuOption {"Primera opción", "fa"},
     //MenuOption {"Con sangría!", "ba", 1},
     MenuOption {"Atrás", "exit"},
   };
+  mainMenu.options.reserve(10);
 
-  tempo->name = "Temporizador";
-  tempo->desc = "Esto es una prueba del temporizador";
+  strcpy(tempo.name, "Temporizador");
+  strcpy(tempo.id, "timer");
+  strcpy(tempo.desc, "Esto es una prueba del temporizador");
+  tempo.options.reserve(10);
 
   listMenus = {
-    mainMenu,
-    firstMenu,
-    tempo,
+    &mainMenu,
+    &firstMenu,
+    &tempo,
   };
 }
 

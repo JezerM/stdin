@@ -19,7 +19,6 @@
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 struct winConfig conf;
-Window *win = new Window("");
 
 void initMenus();
 
@@ -122,35 +121,22 @@ int getWindowSize(int *rows, int *cols) {
   }
 }
 
-/*** output ***/
+void render_Menu(struct Window *menu);
+void render_Temp(struct Timer *menu);
 
-// Esto de aquí es de mero ejemplo, lo cual no nos sirve
-/*
-void editorDrawRows(struct abuf *ab) {
-  int y;
-  for (y = 0; y < conf.srows; y++) {
-    if (y == conf.srows / 3) {
-      char welcome[80];
-      int welcomelen = snprintf(welcome, sizeof(welcome),
-        "Use arrows, or khjl to move. CTRL+Q to exit");
-      if (welcomelen > conf.scols) welcomelen = conf.scols;
-      int padding = (conf.scols - welcomelen) / 2;
-      if (padding) {
-        abAppend(ab, "~", 1);
-        padding--;
-      }
-      while (padding--) abAppend(ab, " ", 1);
-      abAppend(ab, welcome, welcomelen);
-    } else {
-      abAppend(ab, "~", 1);
-    }
-    abAppend(ab, "\x1b[K", 3);
-    if (y < conf.srows - 1) {
-      abAppend(ab, "\r\n", 2);
-    }
+/* Elige la forma de renderizar según el menú actual */
+void render() {
+  switch (conf.actualMenu) {
+    case 0:
+      render_Menu(&mainMenu); break;
+    case 1:
+      render_Menu(&firstMenu); break;
+    case 2:
+      render_Temp(&tempo); break;
+    default:
+      break;
   }
 }
-*/
 
 /* Actualiza la pantalla */
 void refreshScreen() {
@@ -159,7 +145,8 @@ void refreshScreen() {
   abAppend(&ab, "\x1b[?25l", 6);
   abAppend(&ab, "\x1b[H", 3);
 
-  win->render();
+  getWindowSize(&conf.srows, &conf.scols);
+  render();
 
   char buf[32];
   snprintf(buf, sizeof(buf), "\x1b[%d;%dH", conf.cy+1,conf.cx+1);

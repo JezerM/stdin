@@ -10,6 +10,7 @@ struct winConfig {
   int cx, cy; // Posición [x y] del cursor en pantalla
   int srows; // Filas de la ventana
   int scols; // Columnas de la ventana
+  int actualMenu;
   struct termios orig_termios; // La estructura termios
 };
 
