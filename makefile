@@ -9,12 +9,12 @@ FLAGS := -pthread
 TARGET := test
 
 # File sources
-SOURCES := main.cpp rawmode.cpp behavior.cpp buff.cpp
-HEADERS := buff.h winConf.h menu.h
+SOURCES := src/ src/*.cpp
+HEADERS := headers/
 
 compile:
 	@echo "Compilando..."
-	${CC} ${SOURCES} ${HEADERS} -o ${TARGET} ${VER} ${FLAGS} -I mingw-std-threads/
+	${CC} -I ${SOURCES} -I ${HEADERS} -o ${TARGET} ${VER} ${FLAGS} -I mingw-std-threads/
 	@echo "Terminado."
 
 run:
