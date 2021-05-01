@@ -3,10 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-#include <termios.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/ioctl.h>
 
 #include "menu.h"
 #include "buff.h"
@@ -207,7 +205,6 @@ void processKey() {
   } else {
     printf("%d ('%c')\r\n", c, c);
   }
-  return;
   */
   manageMouse(c);
   if (c == '\x1b') {
