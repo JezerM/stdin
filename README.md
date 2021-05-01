@@ -3,6 +3,9 @@ Tasky es un pequeño proyecto, escrito en C/C++, orientado a la organización me
 
 Presenta un menú interactivo hecho desde 0 con `termios.h`, con la capacidad de detectar el mouse, así como la implementación de procesos asíncronos, en el caso del temporizador.
 
+## Minimal
+Esta versión de Tasky no implementa clases, por lo que su funcionamiento se reduce estructuras y funciones.
+
 ## Instalación
 ```bash
 git clone https://github.com/JezerM/stdin
@@ -23,9 +26,9 @@ El **Temporizador** hace uso de procesos asíncronos con `future` y `async`, par
 ## Uso
 Se recomienda leer todos los archivos.
 ### Menús
-El header `menu.h` posee las clases correspondientes para cada menú. Principalmente, poseen la función `update` y `render`, que sirven para actualizar su información e imprimirla en pantalla por medio de `abWrite`.
+El header `menu.h` posee las estructuras correspondientes para cada menú.
 
-Además, existe la función `gotoPos` para actualizar la posición del cursor.
+Con configuraciones globales se especifica qué menú se usa actualmente y se realizan las acciones debidas con el mismo, usando la función `render` para ello.
 
 ### Escribir en pantalla
 Para imprimir en pantalla se usa un buffer, el cual cada vez que se llame a la función `refreshScreen` se imprimirá en pantalla, y posteriormente se reiniciará.
@@ -61,8 +64,9 @@ Cuando una tecla es recibida, `processKey` se encarga de hacer lo necesario. Si 
 Este último realiza la interacción con el menú. Recibe el `id` tanto del menú actual como de la opción actual (o bien cualquier otra opción). Así, luego sólo se efectúan las acciones según la opción.
 
 ```c++
-manageMenus(win->id + "/exit"); // Regresa al menú anterior
+auto act = listMenus[conf.actualMenu];
+manageMenus(act->id + "/exit"); // Regresa al menú anterior
 manageMenus("main/exit"); // Cierra el programa
-string element = win->id + "/" + win->options[win->actualPos].id;
+string element = act->id + "/" + act->options[act->actualPos].id;
 manageMenus(element); // Envía la opción actual, y hace lo que tenga que hacer
 ``
