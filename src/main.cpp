@@ -13,6 +13,8 @@
 
 #define MVER "1.0.0"
 
+using namespace std;
+
 void enableRawMode();
 void disableRawMode();
 
@@ -22,6 +24,10 @@ void processKey();
 void refreshScreen();
 void init();
 void clear();
+void exitAll();
+void menu_Task();
+void menu_Timer();
+void menu_Help();
 
 void help() {
   printf("Tasky - versión %s\n\n", MVER);
@@ -55,16 +61,46 @@ int main(int argc, char *argv[]) {
   #endif
   /* Activa el modo alternativo, para no afectar el output anterior a correr el programa */
   write(STDOUT_FILENO, "\x1b[?1049h", 8);
-  enableRawMode();
+  //enableRawMode();
   clear();
-  init();
+  //init();
 
   while (1) {
-    refreshScreen();
-    processKey();
+    printf("\x1b[H");
+    string mag = "\x1b[1;95m";
+    string clLine = "\x1b[K";
+    string naimu = clLine + mag + "Tasky" + "\x1b[0m\n";
+    string desci = clLine + "¡Esto es Tasky! Escribe la opción que desees" + "\n";
+    printf("%s", naimu.c_str());
+    printf("%s", desci.c_str());
+    printf("\x1b[K\n");
+    printf("\x1b[K[1] - Salir\n");
+    printf("\x1b[K[2] - Lista de tareas\n");
+    printf("\x1b[K[3] - Temporizador\n");
+    printf("\x1b[K[4] - Ayuda\n");
+    int opt;
+    printf("\x1b[KSelecciona: \x1b[J");
+    scanf("%d", &opt);
+
+    switch (opt) {
+      case 1:
+        exitAll();
+        break;
+      case 2:
+        menu_Task();
+        break;
+      case 3:
+        menu_Timer();
+        break;
+      case 4:
+        menu_Help();
+        break;
+      default:
+        break;
+    }
   }
 
-  disableRawMode();
+  //disableRawMode();
   /* Desactiva el modo alternativo, regresando el output anterior al programa */
   write(STDOUT_FILENO, "\x1b[?1049l", 8);
   printf("\x1b[?25h");

@@ -8,7 +8,6 @@
 
 #include "menu.h"
 #include "winConf.h"
-#include "buff.h"
 
 #include <vector>
 
@@ -17,8 +16,6 @@
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 struct winConfig conf;
-
-void initMenus();
 
 /*** terminal ***/
 
@@ -107,7 +104,7 @@ void disableRawMode() {
 }
 
 /* Activa el modo "Raw", en el que no se imprimirán las teclas presionadas, y se pasarán como datos en "crudo", en ASCII */
-void enableRawMode() {
+void enableRawMode(bool t = false) {
   if (tcgetattr(STDIN_FILENO, &conf.orig_termios) == -1) {
     die("tcgetattr");
   }
@@ -126,8 +123,10 @@ void enableRawMode() {
    * no signal characters (^Z, ^C)*/
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
   /* Control chars: set return condition of min number of bytes and timer */
-  raw.c_cc[VMIN] = 0; // Especifica el tamaño a obtener para enviar un resultado a read
-  raw.c_cc[VTIME] = 2; // El tiempo en milisegundos a esperar para enviar el resultado a read
+  if (t) {
+    raw.c_cc[VMIN] = 0; // Especifica el tamaño a obtener para enviar un resultado a read
+    raw.c_cc[VTIME] = 2; // El tiempo en milisegundos a esperar para enviar el resultado a read
+  }
 
   write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
   write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
@@ -188,47 +187,9 @@ int getWindowSize(int *rows, int *cols) {
 }
 #endif
 
-void render_Menu(struct Window *menu);
-void render_Temp(struct Timer *menu);
-
-/* Elige la forma de renderizar según el menú actual */
-void render() {
-  switch (conf.actualMenu) {
-    case 0:
-      render_Menu(&mainMenu); break;
-    case 1:
-      render_Menu(&firstMenu); break;
-    case 2:
-      render_Temp(&tempo); break;
-    default:
-      break;
-  }
-}
-
-/* Actualiza la pantalla */
-void refreshScreen() {
-  ab = ABUF_INIT;
-
-  abAppend(&ab, "\x1b[?25l", 6);
-  abAppend(&ab, "\x1b[H", 3);
-
-  getWindowSize(&conf.srows, &conf.scols);
-  render();
-
-  char buf[32];
-  snprintf(buf, sizeof(buf), "\x1b[%d;%dH", conf.cy+1,conf.cx+1);
-  abAppend(&ab, buf, strlen(buf));
-
-  write(STDOUT_FILENO, ab.b, ab.len);
-  abFree(&ab);
-}
-
-/*** init ***/
-
-void init() {
-  conf.cx = 0;
-  conf.cy = 0;
-  initMenus();
-  if (getWindowSize(&conf.srows, &conf.scols) == -1) die("getWindowSize");
+void getch() {
+  enableRawMode();
+  readKey();
+  disableRawMode();
 }
 
