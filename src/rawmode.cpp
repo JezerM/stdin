@@ -100,15 +100,15 @@ void enableRawMode() {
 
 /* Desabilita el modo "Raw" */
 void disableRawMode() {
-  write(STDOUT_FILENO, "\e[?1000l", 8);
-  write(STDOUT_FILENO, "\e[?1006l", 8);
+  write(STDOUT_FILENO, "\x1b[?1000l", 8);
+  write(STDOUT_FILENO, "\x1b[?1006l", 8);
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &conf.orig_termios) == -1) {
     die("tcsetattr");
   }
 }
 
 /* Activa el modo "Raw", en el que no se imprimirán las teclas presionadas, y se pasarán como datos en "crudo", en ASCII */
-void enableRawMode() {
+void enableRawMode(bool t = false) {
   if (tcgetattr(STDIN_FILENO, &conf.orig_termios) == -1) {
     die("tcgetattr");
   }
@@ -127,11 +127,13 @@ void enableRawMode() {
    * no signal characters (^Z, ^C)*/
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
   /* Control chars: set return condition of min number of bytes and timer */
-  raw.c_cc[VMIN] = 0; // Especifica el tamaño a obtener para enviar un resultado a read
-  raw.c_cc[VTIME] = 2; // El tiempo en milisegundos a esperar para enviar el resultado a read
+  if (t) {
+    raw.c_cc[VMIN] = 0; // Especifica el tamaño a obtener para enviar un resultado a read
+    raw.c_cc[VTIME] = 1; // El tiempo en milisegundos a esperar para enviar el resultado a read
+  }
 
-  write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
-  write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
+  write(STDOUT_FILENO, "\x1b[?1000h", 8); // Para detectar el mouse
+  write(STDOUT_FILENO, "\x1b[?1006h", 8); // Para formatearlo como valores decimales
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
     die("tcsetattr");
   } 

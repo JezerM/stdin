@@ -13,7 +13,7 @@
 
 #define MVER "1.0.0"
 
-void enableRawMode();
+void enableRawMode(bool t = false);
 void disableRawMode();
 
 void die(const char *c);
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
   #endif
   /* Activa el modo alternativo, para no afectar el output anterior a correr el programa */
   write(STDOUT_FILENO, "\x1b[?1049h", 8);
-  enableRawMode();
+  enableRawMode(true);
   clear();
   init();
 

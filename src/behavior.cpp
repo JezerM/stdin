@@ -12,6 +12,8 @@
 
 void exitAll();
 char readKey();
+void askTime();
+void runTimer();
 
 std::vector<Window*> listMenus;
 Menu *mainMenu = new Menu("main", &conf);
@@ -117,6 +119,18 @@ void manageMenus(std::string element) {
   if (arr[0] == "timer") {
     if (arr[1] == "exit") {
       changeMenus("main");
+    } else
+    if (arr[1] == "start") {
+      if (tempo->time == 0) askTime();
+      if (!tempo->running && tempo->time > 0) std::make_unique<std::future<void>*>(new auto(std::async(std::launch::async, runTimer))).reset();
+    } else
+    if (arr[1] == "stop") {
+      tempo->running = false;
+    } else
+    if (arr[1] == "restart") {
+      tempo->running = false;
+      tempo->time = 0;
+      tempo->seconds = 0; tempo->minutes = 0; tempo->hours = 0;
     }
   }
 
@@ -252,6 +266,12 @@ void initMenus() {
 
   tempo->name = "Temporizador";
   tempo->desc = "Esto es una prueba del temporizador";
+  tempo->options = {
+    MenuOption {"Iniciar", "start"},
+    MenuOption {"Parar", "stop"},
+    MenuOption {"Reiniciar", "restart"},
+    MenuOption {"Salir", "exit"},
+  };
 
   listMenus = {
     mainMenu,

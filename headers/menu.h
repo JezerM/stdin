@@ -146,6 +146,8 @@ class Timer: public Window {
     int minutes;
     int hours;
     bool running = false;
+    int mode = 0;
+    int indentSpace = 4;
 
     Timer(std::string ida, struct winConfig *co) : Window(ida) {
       type = "Timer";
@@ -156,16 +158,14 @@ class Timer: public Window {
     }
     ~Timer() {}
 
-    virtual void update() override {
-      if (running) return;
+    void tempo() {
       running = true;
-      time = 90;
       while (running) {
         seconds = time % 60;
         minutes = (time / 60) % 60;
         hours = (time / 3600) % 60;
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        if (time == 0) {
+        if (time <= 0) {
           break;
         }
         time--;
@@ -173,10 +173,17 @@ class Timer: public Window {
       running = false;
     }
 
+    virtual void update() override {
+      if (running) return;
+      switch (mode) {
+        case 0:
+          std::make_unique<std::future<void>*>(new auto(std::async(std::launch::async, &Timer::update, this))).reset();
+          break;
+      }
+    }
+
     virtual void render() override {
       getWindowSize(&conf.srows, &conf.scols);
-      // std::future<void> hand = std::async(std::launch::async, &Timer::update, this);
-       if (!running) std::make_unique<std::future<void>*>(new auto(std::async(std::launch::async, &Timer::update, this))).reset();
       std::string mag = "\x1b[1;95m";
       std::string neimu = "\x1b[K" + mag + name + "\x1b[0m" + "\r\n";
       std::string desci = "\x1b[K" + desc + "\r\n\x1b[K\r\n";
@@ -187,8 +194,34 @@ class Timer: public Window {
       std::string sp = std::string(conf.scols/2 - 6, ' ');
       abWrite("\x1b[K" + sp + std::string(time) + "\r\n");
       abWrite("\x1b[J");
+      std::string symb = "\u001b[1;94m\u276F \u001b[0m";
+
+      for (int i = 0; i < options.capacity(); i++) {
+        if (i >= options.size()) {
+          abWrite("\x1b[K\r\n");
+          continue;
+        }
+        // if (strcmp(options[i].name, "NULL") == 0) continue;
+        abWrite("\x1b[K");
+        std::string inden = std::string(indentSpace-2, ' ');
+        abWrite(inden);
+        if (actualPos == i) {
+          abWrite(symb);
+          abWrite("\u001b[1;94m");
+        }
+        else abWrite(std::string(2, ' '));
+        abWrite(std::string(options[i].indentTimes * indentSpace, ' '));
+        abWrite(std::string(options[i].name));
+        if (actualPos == i) abWrite("\u001b[0m");
+        abWrite("\r\n");
+      }
+
     }
 };
+
 extern Window *win;
+extern Menu *mainMenu;
+extern Menu *firstMenu;
+extern Timer *tempo;
 
 #endif

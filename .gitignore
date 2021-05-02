@@ -1,2 +1,4 @@
 test
-tes.exe
+test.exe
+compile_commands.json
+.cache/
