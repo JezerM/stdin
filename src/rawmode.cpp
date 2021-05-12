@@ -56,8 +56,8 @@ DWORD initialMode;
 DWORD initialOMode;
 
 void disableRawMode() {
-  write(STDOUT_FILENO, "\e[?1000l", 8);
-  write(STDOUT_FILENO, "\e[?1006l", 8);
+  //write(STDOUT_FILENO, "\e[?1000l", 8);
+  //write(STDOUT_FILENO, "\e[?1006l", 8);
   HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE); 
   HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
   SetConsoleMode(hStdin, initialMode);
@@ -83,8 +83,8 @@ void enableRawMode() {
   oMode &= ~(ENABLE_PROCESSED_OUTPUT);
   SetConsoleMode(hStdout, oMode);
 
-  write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
-  write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
+  //write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
+  //write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
   SetConsoleCP(CP_UTF8);
   SetConsoleOutputCP(CP_UTF8);
 }
@@ -96,8 +96,8 @@ void enableRawMode() {
 
 /* Desabilita el modo "Raw" */
 void disableRawMode() {
-  write(STDOUT_FILENO, "\e[?1000l", 8);
-  write(STDOUT_FILENO, "\e[?1006l", 8);
+  //write(STDOUT_FILENO, "\e[?1000l", 8);
+  //write(STDOUT_FILENO, "\e[?1006l", 8);
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &conf.orig_termios) == -1) {
     die("tcsetattr");
   }
@@ -128,8 +128,8 @@ void enableRawMode(bool t = false) {
     raw.c_cc[VTIME] = 2; // El tiempo en milisegundos a esperar para enviar el resultado a read
   }
 
-  write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
-  write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
+  //write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
+  //write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
     die("tcsetattr");
   } 

@@ -31,11 +31,21 @@ struct Timer {
   int seconds;
   int minutes;
   int hours;
+
+  int shortBreak;
+  int longBreak;
+
+  int mode;
+  int loop;
+  int phase = 0;
+  char state[50] = "Detenido";
+
   bool running;
 };
 
 extern struct Timer tempo;
 
 void getch();
+void restartTimer();
 
 #endif

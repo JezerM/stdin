@@ -1,0 +1,22 @@
+\e[K\e[1;95mAyuda\e[0m
+\e[KPresiona cualquier tecla para salir
+\e[K
+\e[K\e[1mUso\e[0m
+\e[K  Para moverse a través de los menús, escribe la opción que deseas.
+\e[K  Si escribes un número u opción no válida, no ocurrirá nada.
+\e[K  Por ahora, inclusive si escribes una opción válida, puede que no se muestre nada, pues no hay una retroalimentación con la acción.
+\e[K
+\e[K\e[1mAgenda\e[0m
+\e[K  \e[1mAñadir\e[0m
+\e[K    Puedes añadir una tarea a la vez. Se te solicitará la información correspondiente, como el \e[1mNombre\e[0m y la \e[1mFecha\e[0m.
+\e[K
+\e[K  \e[1mEliminar\e[0m
+\e[K    Puedes eliminar una tarea a la vez. Se te solicitará el índice o ubicación en la lista.
+\e[K
+\e[K\e[1mTemporizador\e[0m
+\e[K  \e[1mFuncionamiento\e[0m
+\e[K    Puedes ingresar los valores del tiempo, según desees. Sin embargo, en caso de no añadirlos, se especificarán los valores por defecto.
+\e[K
+\e[K  \e[1mIniciar\e[0m
+\e[K    Al iniciar un temporizador, se te pedirá qué tipo deseas, si el sistema \e[1mPomodoro\e[0m, \e[1mTemporizador\e[0m, o \e[1mCronómetro\e[0m.
+\e[K    Posteriormente, se te pedirá el tiempo.

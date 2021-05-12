@@ -41,8 +41,6 @@ void help() {
 #endif
 
 int main(int argc, char *argv[]) {
-  char *locale;
-  locale = setlocale(LC_ALL, "en_US.utf8");
 
   if (argc == 2) {
     std::string arg1 = argv[1];
@@ -61,9 +59,8 @@ int main(int argc, char *argv[]) {
   #endif
   /* Activa el modo alternativo, para no afectar el output anterior a correr el programa */
   write(STDOUT_FILENO, "\x1b[?1049h", 8);
-  //enableRawMode();
+  write(STDOUT_FILENO, "\e[?1000;1006;1007;1015l", 23);
   clear();
-  //init();
 
   while (1) {
     printf("\x1b[H");
@@ -74,12 +71,12 @@ int main(int argc, char *argv[]) {
     printf("%s", naimu.c_str());
     printf("%s", desci.c_str());
     printf("\x1b[K\n");
-    printf("\x1b[K[1] - Salir\n");
-    printf("\x1b[K[2] - Lista de tareas\n");
-    printf("\x1b[K[3] - Temporizador\n");
-    printf("\x1b[K[4] - Ayuda\n");
+    printf("\x1b[K\x1b[1m[1]\x1b[0m - Salir\n");
+    printf("\x1b[K\x1b[1m[2]\x1b[0m - Lista de tareas\n");
+    printf("\x1b[K\x1b[1m[3]\x1b[0m - Temporizador\n");
+    printf("\x1b[K\x1b[1m[4]\x1b[0m - Ayuda\n");
     int opt;
-    printf("\x1b[KSelecciona: \x1b[J");
+    printf("\x1b[K\x1b[92;1mSelecciona:\x1b[0m \x1b[J");
     scanf("%d", &opt);
 
     switch (opt) {
