@@ -5,7 +5,7 @@ Presenta un menú interactivo hecho desde 0 con `termios.h`, con la capacidad de
 
 ## Instalación
 ```bash
-git clone https://github.com/JezerM/stdin
+git clone https://github.com/JezerM/tasky
 ```
 Es 100% necesario tener un entorno Linux, debido a la librería `termios.h`
 
