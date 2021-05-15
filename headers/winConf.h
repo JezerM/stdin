@@ -8,6 +8,8 @@ struct winConfig {
   int cx, cy;
   int srows;
   int scols;
+  int actualMenu;
+  char statusMessage[100];
 };
 
 extern struct winConfig conf;
@@ -21,6 +23,7 @@ struct winConfig {
   int srows; // Filas de la ventana
   int scols; // Columnas de la ventana
   int actualMenu;
+  char statusMessage[100];
   struct termios orig_termios; // La estructura termios
 };
 

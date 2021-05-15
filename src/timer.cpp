@@ -1,8 +1,10 @@
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <chrono>
 
 #include "menu.h"
+#include "winConf.h"
 
 using namespace std;
 
@@ -14,6 +16,7 @@ void clear();
 void doNothing() {}
 
 void restartTimer() {
+  strcpy(conf.statusMessage, "Temporizador reiniciado");
   strcpy(tempo.state, "Detenido");
   tempo.running = false;
   tempo.time = 0;
@@ -27,10 +30,10 @@ void restartTimer() {
 }
 
 void viewTime() {
-  printf("\x1b[?25l");
+  printf("\e[?25l");
   enableRawMode(true);
   while (1) {
-    printf("\x1b[H");
+    printf("\e[H");
     string name;
     string desc;
     switch (tempo.mode) {
@@ -47,76 +50,79 @@ void viewTime() {
         desc = "Estás visualizando... ¿qué hiciste?";
         break;
     }
-    string mag = "\x1b[1;95m";
-    string clLine = "\x1b[K";
-    string naimu = clLine + mag + name + "\x1b[0m\r\n";
+    string mag = "\e[1;95m";
+    string clLine = "\e[K";
+    string naimu = clLine + mag + name + "\e[0m\r\n";
     string desci = clLine + desc + "\r\n";
-    printf("\x1b[K%s", naimu.c_str());
-    printf("\x1b[K%s", desci.c_str());
+    printf("\e[K%s", naimu.c_str());
+    printf("\e[K%s", desci.c_str());
     char time[13];
     sprintf(time, "%.2d : %.2d : %.2d", tempo.hours, tempo.minutes, tempo.seconds);
-    printf("\x1b[K%s\r\n", time);
+    printf("\e[K%s\r\n", time);
     printf("\n");
-    printf("\x1b[KEstado: \x1b[1m%s\x1b[0m\r\n", tempo.state);
+    printf("\e[KEstado: \e[1m%s\e[0m\r\n", tempo.state);
     if (tempo.mode == 0) {
-      printf("\x1b[KVueltas: \x1b[1m%d\x1b[0m\r\n", tempo.loop);
+      printf("\e[KVueltas: \e[1m%d\e[0m\r\n", tempo.loop);
     }
-    printf("\r\n\x1b[KPresiona cualquier tecla para salir\r\n");
-    printf("\x1b[J");
+    printf("\r\n\e[KPresiona cualquier tecla para salir\r\n");
+    printf("\e[J");
     char c = readKey();
     if (c != '\0') break;
   }
   disableRawMode();
-  printf("\x1b[?25h");
+  printf("\e[?25h");
 }
 
 void askTime() {
-  printf("\x1b[H");
-  string mag = "\x1b[1;95m";
-  string clLine = "\x1b[K";
-  string naimu = clLine + mag + "Temporizador" + "\x1b[0m\n";
+  printf("\e[H");
+  string mag = "\e[1;95m";
+  string clLine = "\e[K";
+  string naimu = clLine + mag + "Temporizador" + "\e[0m\n";
   string desci = clLine + "Ingresa el tiempo (horas, minutos, segundos)." + "\n";
-  printf("\x1b[K%s", naimu.c_str());
-  printf("\x1b[K%s", desci.c_str());
-  char c;
-  while((c = getchar()) != '\n' && c != EOF) {}
+  printf("\e[K%s", naimu.c_str());
+  printf("\e[K%s", desci.c_str());
 
   char h[10], m[10], s[10];
   int hours, minutes, seconds;
 
-  printf("\x1b[KHoras: ");
+  printf("\e[KHoras: ");
   fgets(h, 10, stdin);
-  printf("\x1b[KMinutos: ");
+  printf("\e[KMinutos: ");
   fgets(m, 10, stdin);
-  printf("\x1b[KSegundos: ");
+  printf("\e[KSegundos: ");
   fgets(s, 10, stdin);
 
-  if (strcmp(h, "\n") == 0) {
-    hours = 1;
-  } else {
-    strtok(h,"\n");
-    hours = stoi(h);
+  try {
+    if (strcmp(h, "\n") == 0) {
+      hours = 1;
+    } else {
+      strtok(h,"\n");
+      hours = stoi(h);
+    }
+    if (strcmp(m, "\n") == 0) {
+      minutes = 30;
+    } else {
+      strtok(m,"\n");
+      minutes = stoi(m);
+    }
+    if (strcmp(s, "\n") == 0) {
+      seconds = 0;
+    } else {
+      strtok(s,"\n");
+      seconds = stoi(s);
+    }
+  } catch (invalid_argument) {
+    printf("\e[91;1mError:\e[0m Argumentos inválidos. Ingresa correctamente los datos.\n");
+    getch();
+    return;
   }
-  if (strcmp(m, "\n") == 0) {
-    minutes = 30;
-  } else {
-    strtok(m,"\n");
-    minutes = stoi(m);
-  }
-  if (strcmp(s, "\n") == 0) {
-    seconds = 0;
-  } else {
-    strtok(s,"\n");
-    seconds = stoi(s);
-  }
-
   int time = hours*3600 + minutes*60 + seconds;
   tempo.time = time;
-  printf("\x1b[KTiempo especificado en \x1b[1m%.2d : %.2d : %.2d\x1b[0m\n", hours, minutes, seconds);
-  printf("\n\x1b[KPresiona una tecla para continuar\n");
-  printf("\x1b[?25l");
+  printf("\e[KTiempo especificado en \e[1m%.2d : %.2d : %.2d\e[0m\n", hours, minutes, seconds);
+  printf("\n\e[KPresiona una tecla para continuar\n");
+  printf("\e[?25l");
   getch();
-  printf("\x1b[?25h");
+  printf("\e[?25h");
   tempo.mode = 1;
 }
 
@@ -139,55 +145,59 @@ void runTimer() {
 }
 
 void askPomodoro() {
-  printf("\x1b[H");
-  string mag = "\x1b[1;95m";
-  string clLine = "\x1b[K";
-  string naimu = clLine + mag + "Pomodoro" + "\x1b[0m\n";
+  printf("\e[H");
+  string mag = "\e[1;95m";
+  string clLine = "\e[K";
+  string naimu = clLine + mag + "Pomodoro" + "\e[0m\n";
   string desci = clLine + "Ingresa los datos del temporizador Pomodoro" + "\n";
-  printf("\x1b[K%s", naimu.c_str());
-  printf("\x1b[K%s", desci.c_str());
-  printf("\x1b[K\n");
-  char c;
-  while((c = getchar()) != '\n' && c != EOF) {}
+  printf("\e[K%s", naimu.c_str());
+  printf("\e[K%s", desci.c_str());
+  printf("\e[K\n");
 
   char t[10], s[10], l[10];
   int time, shortTime, longTime;
 
-  printf("\x1b[KTiempo total (minutos): ");
+  printf("\e[KTiempo total (minutos): ");
   fgets(t, 10, stdin);
-  printf("\x1b[KDescanso corto: ");
+  printf("\e[KDescanso corto: ");
   fgets(s, 10, stdin);
-  printf("\x1b[KDescando largo: ");
+  printf("\e[KDescando largo: ");
   fgets(l, 10, stdin);
-  if (strcmp(t, "\n") == 0) {
-    time = 25 * 60;
-  } else {
-    strtok(t,"\n");
-    time = stoi(t) * 60;
-  }
-  if (strcmp(s, "\n") == 0) {
-    shortTime = 5 * 60;
-  } else {
-    strtok(s,"\n");
-    shortTime = stoi(s) * 60;
-  }
-  if (strcmp(l, "\n") == 0) {
-    longTime = 10 * 60;
-  } else {
-    strtok(l,"\n");
-    longTime = stoi(l) * 60;
+  try {
+    if (strcmp(t, "\n") == 0) {
+      time = 25 * 60;
+    } else {
+      strtok(t,"\n");
+      time = stoi(t) * 60;
+    }
+    if (strcmp(s, "\n") == 0) {
+      shortTime = 5 * 60;
+    } else {
+      strtok(s,"\n");
+      shortTime = stoi(s) * 60;
+    }
+    if (strcmp(l, "\n") == 0) {
+      longTime = 10 * 60;
+    } else {
+      strtok(l,"\n");
+      longTime = stoi(l) * 60;
+    }
+  } catch (invalid_argument) {
+    printf("\e[91;1mError:\e[0m Argumentos inválidos. Ingresa correctamente los datos.\n");
+    getch();
+    return;
   }
   tempo.time = time;
   tempo.shortBreak = shortTime;
   tempo.longBreak = longTime;
-  printf("\n\x1b[KEl pomodoro se estableció en:\n");
-  printf("  \x1b[KIntervalos:     \x1b[1m%.2d\x1b[0m minutos\n", time/60);
-  printf("  \x1b[KDescanso corto: \x1b[1m%.2d\x1b[0m minutos\n", shortTime/60);
-  printf("  \x1b[KDescanso largo: \x1b[1m%.2d\x1b[0m minutos\n", longTime/60);
-  printf("\n\x1b[KPresiona una tecla para continuar\n");
-  printf("\x1b[?25l");
+  printf("\n\e[KEl pomodoro se estableció en:\n");
+  printf("  \e[KIntervalos:     \e[1m%.2d\e[0m minutos\n", time/60);
+  printf("  \e[KDescanso corto: \e[1m%.2d\e[0m minutos\n", shortTime/60);
+  printf("  \e[KDescanso largo: \e[1m%.2d\e[0m minutos\n", longTime/60);
+  printf("\n\e[KPresiona una tecla para continuar\n");
+  printf("\e[?25l");
   getch();
-  printf("\x1b[?25h");
+  printf("\e[?25h");
   tempo.mode = 0;
 }
 

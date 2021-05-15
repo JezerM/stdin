@@ -113,7 +113,6 @@ void enableRawMode(bool t = false) {
   struct termios raw = conf.orig_termios; // Modifica el modo original
   /* Input modes: no break, no CR to NL, no parity check, no strip char,
    * no start/stop output control*/
-
   raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
   /* Output modes: disable post processing */
   raw.c_oflag &= ~(OPOST);

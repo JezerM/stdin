@@ -45,24 +45,35 @@ vector<string> split(string text, string del = " ") {
 
 void menu_Task() {
   while (1) {
-    printf("\x1b[H");
-    string mag = "\x1b[1;95m";
-    string clLine = "\x1b[K";
-    string naimu = clLine + mag + "Lista de tareas" + "\x1b[0m\n";
+    printf("\e[H");
+    string mag = "\e[1;95m";
+    string clLine = "\e[K";
+    string naimu = clLine + mag + "Lista de tareas" + "\e[0m\n";
     string desci = clLine + "Esta es la agenda." + "\n";
     printf("%s", naimu.c_str());
     printf("%s", desci.c_str());
-    printf("\x1b[K\n");
-    printf("\x1b[K\x1b[1m[1]\x1b[0m - Regresar\n");
-    printf("\x1b[K\x1b[1m[2]\x1b[0m - \x1b[90mVisualizar las tareas\x1b[0m\n");
-    printf("\x1b[K\x1b[1m[3]\x1b[0m - \x1b[90mAñadir una tarea\x1b[0m\n");
-    printf("\x1b[K\x1b[1m[4]\x1b[0m - \x1b[90mEliminar una tarea\x1b[0m\n");
+    printf("\e[K\n");
+    printf("\e[K\e[1m[1]\e[0m - Regresar\n");
+    printf("\e[K\e[1m[2]\e[0m - \e[90mVisualizar las tareas\e[0m\n");
+    printf("\e[K\e[1m[3]\e[0m - \e[90mAñadir una tarea\e[0m\n");
+    printf("\e[K\e[1m[4]\e[0m - \e[90mEliminar una tarea\e[0m\n");
     int opt;
-    printf("\x1b[K\x1b[92;1mSelecciona:\x1b[0m \x1b[J");
-    scanf("%d", &opt);
+    printf("\e[K\e[92;1mSelecciona:\e[0m \e[J");
+
+    printf("\n%s\n", conf.statusMessage);
+
+    printf("\e[2A\e[%dC", 12);
+    int check = scanf("%d", &opt);
+    char c;
+    while((c = getchar()) != '\n' && c != EOF) {}
+    if (check != 1) {
+      strcpy(conf.statusMessage, "\e[91;1mError:\e[0m Ingresa un número");
+      continue;
+    }
 
     switch (opt) {
       case 1:
+        strcpy(conf.statusMessage, "");
         return;
         break;
       case 2:
@@ -75,6 +86,7 @@ void menu_Task() {
         // Eliminar tarea
         break;
       default:
+        strcpy(conf.statusMessage, "\e[93;1mError:\e[0m Número no válido");
         break;
     }
 
@@ -83,31 +95,44 @@ void menu_Task() {
 
 void menu_SelectTimer() {
   while (1) {
-    printf("\x1b[H");
-    string mag = "\x1b[1;95m";
-    string clLine = "\x1b[K";
-    string naimu = clLine + mag + "Temporizador" + "\x1b[0m\n";
+    printf("\e[H");
+    string mag = "\e[1;95m";
+    string clLine = "\e[K";
+    string naimu = clLine + mag + "Temporizador" + "\e[0m\n";
     string desci = clLine + "Selección del método de temporizador." + "\n";
     printf("%s", naimu.c_str());
     printf("%s", desci.c_str());
-    printf("\x1b[K\n");
-    printf("\x1b[K\x1b[1m[1]\x1b[0m - Regresar\n");
-    printf("\x1b[K\x1b[1m[2]\x1b[0m - Pomodoro\n");
-    printf("\x1b[K\x1b[1m[3]\x1b[0m - Temporizador\n");
-    printf("\x1b[K\x1b[1m[4]\x1b[0m - \e[90mCronómetro\e[0m\n");
+    printf("\e[K\n");
+    printf("\e[K\e[1m[1]\e[0m - Regresar\n");
+    printf("\e[K\e[1m[2]\e[0m - Pomodoro\n");
+    printf("\e[K\e[1m[3]\e[0m - Temporizador\n");
+    printf("\e[K\e[1m[4]\e[0m - \e[90mCronómetro\e[0m\n");
     int opt;
-    printf("\x1b[K\x1b[92;1mSelecciona:\x1b[0m \x1b[J");
-    scanf("%d", &opt);
+    printf("\e[K\e[92;1mSelecciona:\e[0m \e[J");
+
+    printf("\n%s\n", conf.statusMessage);
+
+    printf("\e[2A\e[%dC", 12);
+    int check = scanf("%d", &opt);
+    char c;
+    while((c = getchar()) != '\n' && c != EOF) {}
+    if (check != 1) {
+      strcpy(conf.statusMessage, "\e[91;1mError:\e[0m Ingresa un número");
+      continue;
+    }
 
     switch (opt) {
       case 1:
+        strcpy(conf.statusMessage, "");
         return;
         break;
       case 2:
+        strcpy(conf.statusMessage, "");
         clear();
         return askPomodoro();
         break;
       case 3:
+        strcpy(conf.statusMessage, "");
         clear();
         return askTime();
         break;
@@ -115,6 +140,7 @@ void menu_SelectTimer() {
         // Cronómetro
         break;
       default:
+        strcpy(conf.statusMessage, "\e[93;1mError:\e[0m Número no válido");
         break;
     }
   }
@@ -122,29 +148,41 @@ void menu_SelectTimer() {
 
 void menu_Timer() {
   while (1) {
-    printf("\x1b[H");
-    string mag = "\x1b[1;95m";
-    string clLine = "\x1b[K";
-    string naimu = clLine + mag + "Temporizador" + "\x1b[0m\n";
+    printf("\e[H");
+    string mag = "\e[1;95m";
+    string clLine = "\e[K";
+    string naimu = clLine + mag + "Temporizador" + "\e[0m\n";
     string desci = clLine + "Este es el temporizador." + "\n";
     printf("%s", naimu.c_str());
     printf("%s", desci.c_str());
-    printf("\x1b[K\n");
-    printf("\x1b[K\x1b[1m[1]\x1b[0m - Regresar\n");
-    printf("\x1b[K\x1b[1m[2]\x1b[0m - Visualizar el tiempo\n");
-    printf("\x1b[K\x1b[1m[3]\x1b[0m - %s temporizador\n", tempo.time == 0 ? "Iniciar" : tempo.running ? "Parar" :  "Reanudar");
-    printf("\x1b[K\x1b[1m[4]\x1b[0m - Reiniciar temporizador\n");
+    printf("\e[K\n");
+    printf("\e[K\e[1m[1]\e[0m - Regresar\n");
+    printf("\e[K\e[1m[2]\e[0m - Visualizar el tiempo\n");
+    printf("\e[K\e[1m[3]\e[0m - %s temporizador\n", tempo.time == 0 ? "Iniciar" : tempo.running ? "Parar" :  "Reanudar");
+    printf("\e[K\e[1m[4]\e[0m - Reiniciar temporizador\n");
     int opt;
-    printf("\x1b[K\x1b[92;1mSelecciona:\x1b[0m \x1b[J");
-    scanf("%d", &opt);
+    printf("\e[K\e[92;1mSelecciona:\e[0m \e[J");
+
+    printf("\n%s\n", conf.statusMessage);
+
+    printf("\e[2A\e[%dC", 12);
+    int check = scanf("%d", &opt);
+    char c;
+    while((c = getchar()) != '\n' && c != EOF) {}
+    if (check != 1) {
+      strcpy(conf.statusMessage, "\e[91;1mError:\e[0m Ingresa un número");
+      continue;
+    }
 
     switch (opt) {
       case 1:
+        strcpy(conf.statusMessage, "");
         return;
         break;
       case 2:
         clear();
         viewTime();
+        strcpy(conf.statusMessage, "");
         break;
       case 3:
         clear();
@@ -153,17 +191,23 @@ void menu_Timer() {
           if (tempo.mode == 0) { // Pomodoro
             unique_ptr<future<void>*> a = make_unique<future<void>*>(new auto(async(launch::async, runPomodoro)));
             a.reset();
+            strcpy(conf.statusMessage, "Pomodoro iniciado");
           } else
           if (tempo.mode == 1) { // Temporizador
             std::make_unique<std::future<void>*>(new auto(std::async(std::launch::async, runTimer))).reset();
+            strcpy(conf.statusMessage, "Temporizador iniciado");
           }
         }
-        if (tempo.running) tempo.running = false;
+        if (tempo.running) {
+          tempo.running = false;
+          strcpy(conf.statusMessage, "Tiempo detenido");
+        }
         break;
       case 4:
         restartTimer();
         break;
       default:
+        strcpy(conf.statusMessage, "\e[93;1mError:\e[0m Número no válido");
         break;
     }
   }
@@ -182,7 +226,7 @@ string strreplace(string orgString, const string search, const string replace ) 
 
 void menu_Help() {
   clear();
-  printf("\x1b[?25l");
+  printf("\e[?25l");
 
   FILE *help;
   help = fopen("src/help", "r");
@@ -203,6 +247,6 @@ void menu_Help() {
   fclose(help);
 
   getch();
-  printf("\x1b[?25h");
+  printf("\e[?25h");
 }
 
