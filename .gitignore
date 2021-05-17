@@ -4,3 +4,5 @@ test.exe
 tasky.exe
 compile_commands.json
 .cache/
+
+data.bin

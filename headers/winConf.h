@@ -10,6 +10,7 @@ struct winConfig {
   int scols;
   int actualMenu;
   char statusMessage[100];
+  int changed;
 };
 
 extern struct winConfig conf;
@@ -24,6 +25,7 @@ struct winConfig {
   int scols; // Columnas de la ventana
   int actualMenu;
   char statusMessage[100];
+  int changed; // 0 para 'no cambiado', 1 para 'cambiado'
   struct termios orig_termios; // La estructura termios
 };
 

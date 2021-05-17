@@ -22,6 +22,12 @@ void viewTime();
 void askPomodoro();
 void runPomodoro();
 
+void addTask();
+void removeTask();
+void editTask();
+void viewTasks();
+void saveData(string fileName);
+
 void lessText(string text);
 
 struct Timer tempo;
@@ -54,9 +60,11 @@ void menu_Task() {
     printf("%s", desci.c_str());
     printf("\e[K\n");
     printf("\e[K\e[1m[1]\e[0m - Regresar\n");
-    printf("\e[K\e[1m[2]\e[0m - \e[90mVisualizar las tareas\e[0m\n");
-    printf("\e[K\e[1m[3]\e[0m - \e[90mAñadir una tarea\e[0m\n");
-    printf("\e[K\e[1m[4]\e[0m - \e[90mEliminar una tarea\e[0m\n");
+    printf("\e[K\e[1m[2]\e[0m - Visualizar las tareas\n");
+    printf("\e[K\e[1m[3]\e[0m - Añadir una tarea\n");
+    printf("\e[K\e[1m[4]\e[0m - Editar una tarea\n");
+    printf("\e[K\e[1m[5]\e[0m - Eliminar una tarea\n");
+    printf("\e[K\e[1m[6]\e[0m - Guardar datos\n");
     int opt;
     printf("\e[K\e[92;1mSelecciona:\e[0m \e[J");
 
@@ -77,13 +85,19 @@ void menu_Task() {
         return;
         break;
       case 2:
-        // Ver tareas
+        viewTasks();
         break;
       case 3:
-        // Añadir tarea
+        addTask();
         break;
       case 4:
-        // Eliminar tarea
+        editTask();
+        break;
+      case 5:
+        removeTask();
+        break;
+      case 6:
+        saveData("data.bin");
         break;
       default:
         strcpy(conf.statusMessage, "\e[93;1mError:\e[0m Número no válido");

@@ -27,6 +27,8 @@ void menu_Task();
 void menu_Timer();
 void menu_Help();
 
+void loadData(string fileName);
+
 void help() {
   printf("Tasky - versión %s\n\n", MVER);
   printf("Este es un programa para ver y crear tareas, y poder monitorizar el tiempo, usando Sistemas de control del tiempo, como el Pomodoro.\n");
@@ -69,6 +71,7 @@ int main(int argc, char *argv[]) {
   write(STDOUT_FILENO, "\e[?1000;1006;1007;1015l", 23);
   intro();
   clear();
+  loadData("data.bin");
 
   while (1) {
     printf("\e[H");
