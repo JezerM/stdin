@@ -8,6 +8,7 @@
 
 #include "menu.h"
 #include "winConf.h"
+#include "global.h"
 
 #include <vector>
 

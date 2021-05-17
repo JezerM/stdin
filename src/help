@@ -1,10 +1,10 @@
 \e[K\e[1;95mAyuda\e[0m
-\e[KPresiona cualquier tecla para salir
+\e[KMuévete con \e[1mjk\e[0m ó con las \e[1mFlechas direccionales\e[0m
+\e[KPresiona \e[1mq\e[0m para salir
 \e[K
 \e[K\e[1mUso\e[0m
-\e[K  Para moverse a través de los menús, escribe la opción que deseas.
-\e[K  Si escribes un número u opción no válida, no ocurrirá nada.
-\e[K  Por ahora, inclusive si escribes una opción válida, puede que no se muestre nada, pues no hay una retroalimentación con la acción.
+\e[K  Para  moverse a través de los menús, escribe la opción que deseas.
+\e[K  Si escribes un número u opción no válida, se te advertirá.
 \e[K
 \e[K\e[1mAgenda\e[0m
 \e[K  \e[1mAñadir\e[0m

@@ -5,24 +5,24 @@
 #include <string>
 #include <unistd.h>
 #include <errno.h>
+#include <vector>
+#include <thread>
+#include <future>
 
 #include "menu.h"
+#include "global.h"
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 using namespace std;
-
-void exitAll();
-char readKey();
-void enableRawMode(bool t = false);
-void disableRawMode();
-void clear();
 
 void askTime();
 void runTimer();
 void viewTime();
 void askPomodoro();
 void runPomodoro();
+
+void lessText(string text);
 
 struct Timer tempo;
 
@@ -224,29 +224,26 @@ string strreplace(string orgString, const string search, const string replace ) 
   return orgString;
 }
 
-void menu_Help() {
-  clear();
-  printf("\e[?25l");
-
-  FILE *help;
-  help = fopen("src/help", "r");
-  if (!help) {
-    printf("El archivo de ayuda no fue encontrado\n");
-    printf("Presione una tecla para continuar\n");
-    getch();
-    return;
-  }
+string catFile(string fileName, bool ansi = true) {
+  FILE *file;
+  file = fopen(fileName.c_str(), "r");
+  if (!file) {return "";}
   char s;
   string text;
-  while((s = fgetc(help)) != EOF) {
+  while ((s = fgetc(file)) != EOF) {
     text += s;
   }
-  text = strreplace(text, "\\e", "\x1b");
-  //int a = system(("less \"" + text + "\"").c_str());
-  cout << text;
-  fclose(help);
+  if (ansi) {
+    text = strreplace(text, "\\e", "\x1b");
+  }
+  fclose(file);
+  return text;
+}
 
-  getch();
-  printf("\e[?25h");
+void menu_Help() {
+  clear();
+  string text = catFile("src/help");
+  //int a = system(("less \"" + text + "\"").c_str());
+  lessText(text);
 }
 

@@ -24,8 +24,6 @@
 
 extern struct winConfig conf;
 
-int getWindowSize(int *rows, int *cols);
-
 struct Timer {
   int time = 0;
   int seconds;
@@ -39,13 +37,11 @@ struct Timer {
   int loop;
   int phase = 0;
   char state[50] = "Detenido";
+  int stateCode; // 0 "Detenido", 1 "Corriendo", "2" Reiniciado
 
   bool running;
 };
 
 extern struct Timer tempo;
-
-void getch();
-void restartTimer();
 
 #endif

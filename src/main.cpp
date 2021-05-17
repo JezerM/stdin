@@ -1,5 +1,4 @@
 /*** includes ***/
-#include "winConf.h"
 #include <cstring>
 #include <ctype.h>
 #include <iostream>
@@ -8,6 +7,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <locale.h>
+
+#include "winConf.h"
+#include "global.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -19,21 +21,24 @@ using namespace std;
 
 void enableRawMode();
 void disableRawMode();
+string catFile(string fileName, bool ansi = true);
 
-void die(const char *c);
-
-void processKey();
-void refreshScreen();
-void init();
-void clear();
-void exitAll();
 void menu_Task();
 void menu_Timer();
 void menu_Help();
 
 void help() {
   printf("Tasky - versión %s\n\n", MVER);
-  printf("Este es un programa para ver y crear tareas, y poder monitorizar el tiempo, usando Sistemas de control del tiempo, como el Pomodoro.\n"); 
+  printf("Este es un programa para ver y crear tareas, y poder monitorizar el tiempo, usando Sistemas de control del tiempo, como el Pomodoro.\n");
+}
+
+void intro() {
+  clear();
+  printf("\e[?25l");
+  string text = catFile("src/intro");
+  cout << text;
+  getch();
+  printf("\e[?25h");
 }
 
 /*** init ***/
@@ -62,6 +67,7 @@ int main(int argc, char *argv[]) {
   /* Activa el modo alternativo, para no afectar el output anterior a correr el programa */
   write(STDOUT_FILENO, "\e[?1049h", 8);
   write(STDOUT_FILENO, "\e[?1000;1006;1007;1015l", 23);
+  intro();
   clear();
 
   while (1) {

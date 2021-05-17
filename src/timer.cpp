@@ -5,17 +5,20 @@
 
 #include "menu.h"
 #include "winConf.h"
+#include "global.h"
 
 using namespace std;
 
-void enableRawMode(bool t = false);
-void disableRawMode();
-char readKey();
-void clear();
-
 void doNothing() {}
 
+void alertBeep() {
+  playBeep(440.f, 300);
+  playBeep(400.f, 400);
+  playBeep(460.f, 600);
+}
+
 void restartTimer() {
+  tempo.stateCode = 2;
   strcpy(conf.statusMessage, "Temporizador reiniciado");
   strcpy(tempo.state, "Detenido");
   tempo.running = false;
@@ -128,6 +131,7 @@ void askTime() {
 
 void runTimer() {
   tempo.running = true;
+  tempo.stateCode = 1;
   strcpy(tempo.state, "Trabajando");
   while (tempo.running) {
     tempo.seconds = tempo.time % 60;
@@ -136,6 +140,10 @@ void runTimer() {
     //this_thread::sleep_for(chrono::seconds(1));
     sleep(1);
     if (tempo.time <= 0) {
+      if (tempo.stateCode == 1) {
+        alertBeep();
+        tempo.stateCode = 0;
+      }
       break;
     }
     tempo.time--;
@@ -254,6 +262,10 @@ void runPomodoro() {
         tempo.phase = 3;
       }
     } else {
+      if (tempo.stateCode == 1) {
+        alertBeep();
+        tempo.stateCode = 0;
+      }
       break;
     }
   }
