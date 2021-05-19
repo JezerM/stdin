@@ -4,6 +4,11 @@ Tasky es un pequeño proyecto, escrito en C/C++, orientado a la organización me
 ## Simple
 Esta versión de Tasky no implementa un menú interactivo, sino un menú simple, sencillo, que se controla mediante opciones a través del teclado.
 
+## Dependencias
+```bash
+sudo apt install libopenal-dev build-essential
+```
+
 ## Instalación
 ```bash
 git clone https://github.com/JezerM/stdin
