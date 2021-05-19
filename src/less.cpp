@@ -6,20 +6,14 @@
 #include <vector>
 
 #include "global.h"
+#include "winConf.h"
 
 using namespace std;
 
-struct lessConf {
-  int pos = 0;
-  int cols;
-  int rows;
-  int lines = 0;
-  bool running = false;
-};
+struct lessConf g;
 
-struct lessConf lessy;
-
-void processLessKey() {
+/* Procesa las teclas leídas */
+void processLessKey(struct lessConf *lessy) {
   char c = readKey();
   /*
   if (iscntrl(c)) {
@@ -40,21 +34,21 @@ void processLessKey() {
     }
   }
   if (c == 'q') {
-    lessy.running = false;
+    lessy->running = false;
   } else
   if (c == 'k') {
-    if (lessy.pos > 0) {
-      lessy.pos--;
+    if (lessy->pos > 0) {
+      lessy->pos--;
     }
   } else
   if (c == 'j') {
-    if (lessy.pos + lessy.rows < lessy.lines + 1) {
-      lessy.pos++;
+    if (lessy->pos + lessy->rows < lessy->lines + 1) {
+      lessy->pos++;
     }
   }
 }
 
-/* Divide el texto para poder caber en el tamaño especificado de columns y filas */
+/* Divide el texto para poder caber horizontalmente en la pantalla */
 vector<string> stripText(string text, struct lessConf confi) {
   vector<string> origLines = split(text, "\n");
   vector<string> lines;
@@ -62,6 +56,7 @@ vector<string> stripText(string text, struct lessConf confi) {
   //printf("Starting!\n");
   //printf("Original lines: %.2lu\n", origLines.size());
   for (int p = 0; p < origLines.size(); p++) {
+    origLines[p] = strreplace(origLines[p], "\r", "");
     string line = "";
     vector<string> wordArr = split(origLines[p], " ");
 
@@ -96,6 +91,7 @@ vector<string> stripText(string text, struct lessConf confi) {
   return lines;
 }
 
+/* Formatea el texto para caber verticalmente en la pantalla */
 string formatText(vector<string> lines, struct lessConf confi) {
   string copy = "";
   int p = 0;
@@ -125,7 +121,8 @@ string formatText(vector<string> lines, struct lessConf confi) {
   return copy;
 }
 
-void lessText(string text) {
+/* Crea un loop en el que se muestra el texto introducido, de forma interactiva */
+void lessText(string text, struct lessConf lessy) {
   enableRawMode(false);
   clear();
   printf("\e[?25l");
@@ -143,7 +140,7 @@ void lessText(string text) {
     string formatted = formatText(lines, lessy);
     write(STDOUT_FILENO, formatted.c_str(), formatted.size());
     write(STDOUT_FILENO, "\e[?25l", 6);
-    processLessKey();
+    processLessKey(&lessy);
   }
   printf("\e[?25h");
   disableRawMode();

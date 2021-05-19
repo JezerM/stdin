@@ -11,6 +11,7 @@
 
 #include "menu.h"
 #include "global.h"
+#include "winConf.h"
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
@@ -28,7 +29,7 @@ void editTask();
 void viewTasks();
 void saveData(string fileName);
 
-void lessText(string text);
+void lessText(string text, struct lessConf lessy);
 
 struct Timer tempo;
 
@@ -49,6 +50,7 @@ vector<string> split(string text, string del = " ") {
   return arr;
 }
 
+/* El menú de la Lista de Tareas */
 void menu_Task() {
   while (1) {
     printf("\e[H");
@@ -79,9 +81,9 @@ void menu_Task() {
       continue;
     }
 
+    strcpy(conf.statusMessage, "");
     switch (opt) {
       case 1:
-        strcpy(conf.statusMessage, "");
         return;
         break;
       case 2:
@@ -107,6 +109,7 @@ void menu_Task() {
   }
 }
 
+/* El menú para la selección del temporizador */
 void menu_SelectTimer() {
   while (1) {
     printf("\e[H");
@@ -135,18 +138,16 @@ void menu_SelectTimer() {
       continue;
     }
 
+    strcpy(conf.statusMessage, "");
     switch (opt) {
       case 1:
-        strcpy(conf.statusMessage, "");
         return;
         break;
       case 2:
-        strcpy(conf.statusMessage, "");
         clear();
         return askPomodoro();
         break;
       case 3:
-        strcpy(conf.statusMessage, "");
         clear();
         return askTime();
         break;
@@ -160,6 +161,7 @@ void menu_SelectTimer() {
   }
 }
 
+/* El menú del temporizador */
 void menu_Timer() {
   while (1) {
     printf("\e[H");
@@ -188,15 +190,14 @@ void menu_Timer() {
       continue;
     }
 
+    strcpy(conf.statusMessage, "");
     switch (opt) {
       case 1:
-        strcpy(conf.statusMessage, "");
         return;
         break;
       case 2:
         clear();
         viewTime();
-        strcpy(conf.statusMessage, "");
         break;
       case 3:
         clear();
@@ -227,6 +228,7 @@ void menu_Timer() {
   }
 }
 
+/* Reemplaza ciertos carácteres por otros en una cadena de texto */
 string strreplace(string orgString, const string search, const string replace ) {
   for( size_t pos = 0; ; pos += replace.length() ) {
     pos = orgString.find( search, pos );
@@ -238,6 +240,7 @@ string strreplace(string orgString, const string search, const string replace ) 
   return orgString;
 }
 
+/* Lee el contenido de un archivo y lo regresa como string */
 string catFile(string fileName, bool ansi = true) {
   FILE *file;
   file = fopen(fileName.c_str(), "r");
@@ -254,10 +257,13 @@ string catFile(string fileName, bool ansi = true) {
   return text;
 }
 
+struct lessConf helpy;
+
+/* Muestra el menú de ayuda */
 void menu_Help() {
   clear();
   string text = catFile("src/help");
   //int a = system(("less \"" + text + "\"").c_str());
-  lessText(text);
+  lessText(text, helpy);
 }
 

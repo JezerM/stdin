@@ -33,4 +33,12 @@ extern struct winConfig conf;
 
 #endif
 
+struct lessConf {
+  int pos = 0;
+  int cols;
+  int rows;
+  int lines = 0;
+  bool running = false;
+};
+
 #endif

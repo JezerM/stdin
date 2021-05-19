@@ -2,6 +2,8 @@ test
 tasky
 test.exe
 tasky.exe
+debug
+debug.exe
 compile_commands.json
 .cache/
 

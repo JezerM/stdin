@@ -9,13 +9,24 @@ FLAGS := -pthread -lopenal
 TARGET := tasky
 
 # File sources
-SOURCES := src/ src/*.cpp
-HEADERS := headers/
+SOURCES := -I src/ src/*.cpp
+HEADERS := -I headers/ -I mingw-std-threads/
 
 compile:
-	@echo "Compilando..."
-	${CC} -I ${SOURCES} -I ${HEADERS} -o ${TARGET} ${VER} ${FLAGS} -I mingw-std-threads/
+	@echo "Compilando en \"${TARGET}\"..."
+	${CC} ${SOURCES} ${HEADERS} -o ${TARGET} ${VER} ${FLAGS}
 	@echo "Terminado."
+
+debug: debug.compile debug.run
+
+debug.compile:
+	@echo "Compilando para el debug..."
+	${CC} -g ${SOURCES} ${HEADERS} -o debug ${VER} ${FLAGS}
+	@echo "Compilado."
+
+debug.run:
+	@echo "Ejecutando gdb..."
+	gdb debug
 
 run:
 	@./${TARGET}

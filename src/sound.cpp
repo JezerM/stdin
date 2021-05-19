@@ -61,6 +61,7 @@ void MM_exit_al() {
   alcCloseDevice(openal_output_device);
 }
 
+/* Reproduce la frecuencia especificada en los milisegundos especificados */
 void playBeep(float freq, int milliseconds) {
   MM_init_al();
   unsigned sample_rate = 44100;

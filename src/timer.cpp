@@ -2,6 +2,7 @@
 #include <string>
 #include <thread>
 #include <chrono>
+#include <time.h>
 
 #include "menu.h"
 #include "winConf.h"
@@ -11,12 +12,49 @@ using namespace std;
 
 void doNothing() {}
 
+/* Devulve el tiempo en segundos entre dos fechas */
+double diffBetweenDates(string date1, string date2, string formatStr = "%d-%m-%Y") {
+  time_t t = time(NULL);
+  struct tm time_date1 = *localtime(&t);
+  struct tm time_date2 = *localtime(&t);
+  strptime(date1.c_str(), formatStr.c_str(), &time_date1);
+  strptime(date2.c_str(), formatStr.c_str(), &time_date2);
+
+  time_t time_first = mktime(&time_date1);
+  time_t time_second = mktime(&time_date2);
+
+  double difference = difftime(time_first, time_second);
+  return difference;
+}
+
+/* Obtiene la fecha actual según el formato de entrada.
+ * Si el formato no es especificado, se usará "%d-%m-%Y" */
+string getActualDate(string formatStr = "%d-%m-%Y") {
+  time_t t = time(NULL);
+  struct tm localTime = *localtime(&t);
+  char date[11];
+  int dateWrote = strftime(date, sizeof date, formatStr.c_str(), &localTime);
+  return string(date);
+}
+
+/* Obtiene el tiempo actual según el formato de entrada.
+ * Si el formato no es especificado, se usará "%H:%M:%S" "*/
+string getActualTime(string formatStr = "%H:%M:%S") {
+  time_t t = time(NULL);
+  struct tm localTime = *localtime(&t);
+  char time[9];
+  int timeWrote = strftime(time, sizeof time, formatStr.c_str(), &localTime);
+  return string(time);
+}
+
+/* Crea un pequeño beep de alerta */
 void alertBeep() {
   playBeep(440.f, 300);
   playBeep(400.f, 400);
   playBeep(460.f, 600);
 }
 
+/* Reinicia el temporizador */
 void restartTimer() {
   tempo.stateCode = 2;
   strcpy(conf.statusMessage, "Temporizador reiniciado");
@@ -32,6 +70,7 @@ void restartTimer() {
   tempo.phase = 0;
 }
 
+/* Visualiza el temporizador, con actualizaciones en tiempo real */
 void viewTime() {
   printf("\e[?25l");
   enableRawMode(true);
@@ -76,6 +115,7 @@ void viewTime() {
   printf("\e[?25h");
 }
 
+/* Pregunta el tiempo del Temporizador */
 void askTime() {
   printf("\e[H");
   string mag = "\e[1;95m";
@@ -129,6 +169,7 @@ void askTime() {
   tempo.mode = 1;
 }
 
+/* Inicia el Temporizador */
 void runTimer() {
   tempo.running = true;
   tempo.stateCode = 1;
@@ -152,6 +193,7 @@ void runTimer() {
   strcpy(tempo.state, "Detenido");
 }
 
+/* Pregunta el tiempo del Pomodoro */
 void askPomodoro() {
   printf("\e[H");
   string mag = "\e[1;95m";
@@ -209,6 +251,7 @@ void askPomodoro() {
   tempo.mode = 0;
 }
 
+/* Inicia el Pomodoro */
 void runPomodoro() {
   tempo.running = true;
   tempo.loop = 0;
