@@ -3,6 +3,7 @@
 #include <thread>
 #include <chrono>
 #include <time.h>
+#include <unistd.h>
 
 #include "menu.h"
 #include "winConf.h"
@@ -23,7 +24,12 @@ double diffBetweenDates(string date1, string date2, string formatStr = "%d-%m-%Y
   time_t time_first = mktime(&time_date1);
   time_t time_second = mktime(&time_date2);
 
-  double difference = difftime(time_first, time_second);
+  double difference;
+  if (time_first >= time_second) {
+    difference = difftime(time_first, time_second);
+  } else {
+    difference = -difftime(time_second, time_first);
+  }
   return difference;
 }
 
@@ -47,11 +53,38 @@ string getActualTime(string formatStr = "%H:%M:%S") {
   return string(time);
 }
 
+/* Formatea una fecha de forma correcta */
+string formatDate(string date, string formatStr = "%d-%m-%Y") {
+  time_t t = time(NULL);
+  struct tm time_date = *localtime(&t);
+  char time[20];
+  strptime(date.c_str(), formatStr.c_str(), &time_date);
+  strftime(time, sizeof time, formatStr.c_str(), &time_date);
+  return string(time);
+}
+
+/* Verifica si la fecha ingresada es correcta */
+int validDate(string date, string formatStr = "%d-%m-%Y") {
+  time_t t = time(NULL);
+  struct tm time_date = *localtime(&t);
+  char time[20];
+  char *done = strptime(date.c_str(), formatStr.c_str(), &time_date);
+  if (done == nullptr) {
+    return 0;
+  }
+  if (time_date.tm_year <= 2000) {
+    return 0;
+  }
+  return 1;
+}
+
 /* Crea un pequeño beep de alerta */
 void alertBeep() {
+  write(STDOUT_FILENO, "\e[?5h", 5);
   playBeep(440.f, 300);
   playBeep(400.f, 400);
   playBeep(460.f, 600);
+  write(STDOUT_FILENO, "\e[?5l", 5);
 }
 
 /* Reinicia el temporizador */

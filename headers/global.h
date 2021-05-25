@@ -10,6 +10,7 @@ void clear();
 void exitAll();
 void disableRawMode();
 void enableRawMode(bool t);
+void rawTimer(bool mode);
 char readKey();
 void getch();
 int getWindowSize(int *rows, int *cols);

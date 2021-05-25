@@ -136,6 +136,26 @@ void enableRawMode(bool t = false) {
 }
 #endif
 
+void rawTimer(bool mode) {
+  struct termios actual;
+  if (tcgetattr(STDIN_FILENO, &actual) == -1) {
+    die("tcgetattr");
+  }
+
+  struct termios raw = actual; // Modifica el modo original
+  if (mode) {
+    raw.c_cc[VMIN] = 0; // Especifica el tamaño a obtener para enviar un resultado a read
+    raw.c_cc[VTIME] = 2; // El tiempo en milisegundos a esperar para enviar el resultado a read
+  } else {
+    raw.c_cc[VMIN] = 0;
+    raw.c_cc[VTIME] = -1;
+  }
+
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1) {
+    die("tcsetattr");
+  } 
+}
+
 /* Espera hasta obtener una tecla y la regresa */
 char readKey() {
   int nread;

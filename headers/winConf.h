@@ -39,6 +39,7 @@ struct lessConf {
   int rows;
   int lines = 0;
   bool running = false;
+  char search[20];
 };
 
 #endif

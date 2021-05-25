@@ -12,6 +12,8 @@ void lessText(string text, struct lessConf lessy);
 string getActualDate(string formatStr = "%d-%m-%Y");
 string getActualTime(string formatStr = "H:%M:%S");
 double diffBetweenDates(string date1, string date2, string formatStr = "%d-%m-%Y");
+int validDate(string date, string formatStr = "%d-%m-%Y");
+string formatDate(string date, string formatStr = "%d-%m-%Y");
 
 int size;
 
@@ -64,35 +66,56 @@ void viewTasks() {
   text += "\e[K\n";
 
   const int secs_per_day = 60 * 60 * 24;
+  const int secs_per_hour = 60 * 60;
+  const int secs_per_minutes = 60;
 
-  string actualDay = getActualDate();
+  string actualDay = getActualDate("%d-%m-%Y");
+  string actualTime = getActualTime("%H:%M");
 
   for (int i = 0; i < LISTSIZE ; i++) {
     if (strcmp(lista[i].name, "") == 0) break;
 
     text += "\e[K";
-    char s[180];
-    int difference = diffBetweenDates(lista[i].date, actualDay) / secs_per_day;
-    char diffStr[10];
-    sprintf(diffStr, "%d days", difference);
-    sprintf(s, "[%d] \"%s\" - %s %s (in %s) - %s", i, lista[i].name, lista[i].date, lista[i].time, diffStr, lista[i].completed ? "Done" :  "Nope");
+    char s[230];
+    double diffDays = diffBetweenDates(lista[i].date, actualDay, "%d-%m-%Y");
+    double diffTime = diffBetweenDates(lista[i].time, actualTime, "%H:%M");
 
-    string color;
-    if (lista[i].state == 0) {
-      color = "";
+    int days = diffDays / secs_per_day;
+    int hours = diffTime / secs_per_hour + 0.5;
+    char diffStr[30];
+    if (days == 0 ) {
+      if (hours < 0) {
+        sprintf(diffStr, "hace %d horas", -hours);
+      } else
+      if (hours == 0) {
+        sprintf(diffStr, "ahora");
+      } else {
+        sprintf(diffStr, "en %d horas", hours);
+      }
     } else
-    if (lista[i].state == 1) {
-      color = "\e[94m";
-    } else
-    if (lista[i].state == 2) {
-      color = "\e[93m";
-    } else
-    if (lista[i].state == 3) {
-      color = "\e[91m";
+    if (days < 0) {
+      sprintf(diffStr, "hace %d días", - days);
+    } else {
+      sprintf(diffStr, "en %d días", days);
     };
+
+    char color[10];
+    if (lista[i].state == 0) {
+      strcpy(color, "\e[0m");
+    } else
+    if (lista[i].state == 1) { // Added
+      strcpy(color, "\e[0;94m");
+    } else
+    if (lista[i].state == 2) { // Edited
+      strcpy(color, "\e[0;93m");
+    } else
+    if (lista[i].state == 3) { // Deleted
+      strcpy(color, "\e[0;91m");
+    };
+    sprintf(s, "\e[1m[%d]%s \"%s\" - %s %s (%s) - %s", i, color, lista[i].name, lista[i].date, lista[i].time, diffStr, lista[i].completed ? "Done" :  "Nope");
+
     text += color + string(s) + "\e[0m\n";
   }
-  string a = "\e[KHola a todo el mundo!";
   lessText(text, taskly);
 }
 
@@ -103,11 +126,14 @@ void addTask() {
   newTask.completed = false;
   newTask.state = 1;
 
+  string f = "%H:%M";
+
+  string actualDate = getActualDate();
+  string actualTime = getActualTime(f);
+
   printf("\e[H");
-  string mag = "\e[1;95m";
-  string clLine = "\e[K";
-  string naimu = clLine + mag + "Añadir tarea" + "\e[0m\n";
-  string desci = clLine + "Añade el nombre, fecha, y hora de la tarea" + "\n";
+  string naimu = "\e[K\e[1;95mAñadir tarea\e[0m\n";
+  string desci = "\e[KAñade el nombre, fecha, y hora de la tarea\n";
   printf("\e[K%s", naimu.c_str());
   printf("\e[K%s", desci.c_str());
 
@@ -115,34 +141,37 @@ void addTask() {
   cin.getline(newTask.name, sizeof newTask.name);
 
   if (strcmp(newTask.name, "") == 0) {
-    strcpy(conf.statusMessage, "Error: Ingresa un nombre");
+    strcpy(conf.statusMessage, "\e[91;1mError:\e[0m Ingresa un nombre");
     return;
   }
 
-  printf("Fecha (09-12-2021): ");
+  printf("Fecha (%s): ", actualDate.c_str());
   cin.getline(newTask.date, sizeof newTask.date);
-
-  printf("Hora (13:15): ");
-  cin.getline(newTask.time, sizeof newTask.time);
 
   if (strcmp(newTask.date, "") == 0) {
     strcpy(newTask.date, getActualDate().c_str());
   }
+  if (!validDate(newTask.date)) {
+    strcpy(conf.statusMessage, "\e[91;1mError:\e[0m Fecha incorrecta");
+    return;
+  }
+  strcpy(newTask.date, formatDate(newTask.date).c_str());
+
+  printf("Hora (%s): ", actualTime.c_str());
+  cin.getline(newTask.time, sizeof newTask.time);
+
   if (strcmp(newTask.time, "") == 0) {
-    string f = "%H:%M";
     strcpy(newTask.time, getActualTime(f).c_str());
   }
+  if (!validDate(newTask.time, f)) {
+    strcpy(conf.statusMessage, "Hora incorrecta");
+    return;
+  }
+  strcpy(newTask.time, formatDate(newTask.time, f).c_str());
 
   lista[size] = newTask;
   size++;
   conf.changed = 1;
-  printf("\nTarea añadida\n");
-  printf("\"%s\" %s %s\n", newTask.name, newTask.date, newTask.time);
-
-  printf("\n\e[KPresiona una tecla para continuar\n");
-  printf("\e[?25l");
-  getch();
-  printf("\e[?25h");
 
   strcpy(conf.statusMessage, "Tarea añadida");
 }
@@ -154,36 +183,47 @@ void removeTask() {
   int index;
 
   printf("\e[H");
-  string mag = "\e[1;95m";
-  string clLine = "\e[K";
-  string naimu = clLine + mag + "Eliminar tarea" + "\e[0m\n";
-  string desci = clLine + "Ingresa el índice de la tarea a eliminar" + "\n";
+  string naimu = "\e[K\e[1;95mEliminar tarea\e[0m\n";
+  string desci = "\e[KIngresa el índice de la tarea a eliminar\n";
   printf("\e[K%s", naimu.c_str());
   printf("\e[K%s", desci.c_str());
 
+  char ind[20];
   printf("Índice de la tarea: ");
-  scanf("%d", &index);
+  cin.getline(ind, 10);
+  if (strcmp(ind, "") == 0) {
+    return;
+  };
+  index = stoi(ind);
+
   if (index < 0) {
-    strcpy(conf.statusMessage, "Error: Índice debajo de 0");
+    strcpy(conf.statusMessage, "\e[91;1mError:\e[0m Índice debajo de 0");
     return;
   }
   if (strcmp(lista[index].name, "") == 0) {
     char sa[50];
-    sprintf(sa, "Error: No hay tarea en el índice [%d]\n", index);
+    sprintf(sa, "\e[93;1mError:\e[0m No hay tarea en el índice [%d]", index);
     strcpy(conf.statusMessage, sa);
     return;
   }
+
+  char s[150];
+  sprintf(s, "\n\e[1m[%d]\e[0m \"%s\" - %s %s - %s", index, lista[index].name, lista[index].date, lista[index].time, lista[index].completed ? "Done" :  "Nope");
+  printf("%s\n\n", s);
+  int edit;
+  printf("¿Esta es la tarea a editar?\n");
+  printf("1 ó 0: ");
+  scanf("%d", &edit);
+  char c;
+  while ((c = getchar() != '\n' && c != EOF)) {}
+  if (!edit) {return;}
+
   if (lista[index].state != 3) {
     lista[index].state = 3; // Borrado
   } else {
     lista[index].state = 1;
   }
   conf.changed = 1;
-  printf("\nTarea eliminada\n\n");
-  printf("\n\e[KPresiona una tecla para continuar\n");
-  printf("\e[?25l");
-  getch();
-  printf("\e[?25h");
 
   strcpy(conf.statusMessage, "Tarea eliminada");
 }
@@ -197,52 +237,88 @@ void editTask() {
   int index;
   char completed[2];
 
+  string f = "%H:%M";
+
+  string actualDate = getActualDate();
+  string actualTime = getActualTime(f);
+
   printf("\e[H");
-  string mag = "\e[1;95m";
-  string clLine = "\e[K";
-  string naimu = clLine + mag + "Editar tarea" + "\e[0m\n";
-  string desci = clLine + "Ingresa el índice de la tarea y los datos de la tarea" + "\n";
+  string naimu = "\e[K\e[1;95mEditar tarea\e[0m\n";
+  string desci = "\e[KIngresa el índice de la tarea y los datos de la tarea\n";
   printf("\e[K%s", naimu.c_str());
   printf("\e[K%s", desci.c_str());
 
+  char ind[10];
   printf("Índice de la tarea: ");
-  scanf("%d", &index);
-  while((c = getchar()) != '\n' && c != EOF) {}
+  cin.getline(ind, 10);
+
+  if (strcmp(ind, "") == 0) {
+    return;
+  };
+  index = stoi(ind);
+
+
   if (index < 0) {
-    strcpy(conf.statusMessage, "Error: Índice debajo de 0");
+    strcpy(conf.statusMessage, "\e[91;1mError:\e[0m Índice debajo de 0");
     return;
   }
   if (strcmp(lista[index].name, "") == 0) {
     char sa[50];
-    sprintf(sa, "Error: No hay tarea en el índice [%d]\n", index);
+    sprintf(sa, "\e[93;1mError:\e[0m No hay tarea en el índice [%d]", index);
     strcpy(conf.statusMessage, sa);
     return;
   }
+
+  char s[150];
+  sprintf(s, "\n\e[1m[%d]\e[0m \"%s\" - %s %s - %s", index, lista[index].name, lista[index].date, lista[index].time, lista[index].completed ? "Done" :  "Nope");
+  printf("%s\n\n", s);
+  int edit;
+  printf("¿Esta es la tarea a editar?\n");
+  printf("1 ó 0: ");
+  scanf("%d", &edit);
+  while ((c = getchar() != '\n' && c != EOF)) {}
+  if (!edit) {return;}
+  
+  int t = 0;
+
   printf("Nombre: ");
   cin.getline(editedTask.name, 50);
-  printf("Fecha: ");
-  cin.getline(editedTask.date, 11);
+
+  printf("Fecha (%s): ", actualDate.c_str());
+  cin.getline(editedTask.date, sizeof editedTask.date);
+
+  printf("Hora (%s): ", actualTime.c_str());
+  cin.getline(editedTask.time, sizeof editedTask.time);
+
   printf("Completado (1 ó 0): ");
   cin.getline(completed, 2);
+
   if (strcmp(editedTask.name, "") == 0) {
     strcpy(editedTask.name, lista[index].name);
+    t++;
   }
   if (strcmp(editedTask.date, "") == 0) {
     strcpy(editedTask.date, lista[index].date);
+    t++;
+  }
+  if (strcmp(editedTask.time, "") == 0) {
+    strcpy(editedTask.time, lista[index].time);
+    t++;
   }
   if (strcmp(completed, "") == 0) {
     editedTask.completed = lista[index].completed;
+    t++;
   } else {
     editedTask.completed = stoi(completed);
   }
 
+  if (t >= 4) {
+    strcpy(conf.statusMessage, "La tarea no fue modificada");
+    return;
+  }
+
   lista[index] = editedTask;
   conf.changed = 1;
-  printf("Tarea modificada\n\n");
-  printf("\n\e[KPresiona una tecla para continuar\n");
-  printf("\e[?25l");
-  getch();
-  printf("\e[?25h");
 
   strcpy(conf.statusMessage, "Tarea modificada");
 }
