@@ -59,6 +59,8 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  srand(time(0));
+
   #ifdef _WIN32
   HANDLE hStdin = GetStdHandle(STD_OUTPUT_HANDLE); 
   DWORD mode = 0;

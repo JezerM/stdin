@@ -33,6 +33,18 @@ double diffBetweenDates(string date1, string date2, string formatStr = "%d-%m-%Y
   return difference;
 }
 
+double diffBetweenDates(struct tm date1, struct tm date2) {
+  time_t time_first = mktime(&date1);
+  time_t time_second = mktime(&date2);
+  double difference;
+  if (time_first >= time_second) {
+    difference = difftime(time_first, time_second);
+  } else {
+    difference = -difftime(time_second, time_first);
+  }
+  return difference;
+}
+
 /* Obtiene la fecha actual según el formato de entrada.
  * Si el formato no es especificado, se usará "%d-%m-%Y" */
 string getActualDate(string formatStr = "%d-%m-%Y") {
@@ -53,12 +65,25 @@ string getActualTime(string formatStr = "%H:%M:%S") {
   return string(time);
 }
 
+struct tm getActualDate() {
+  time_t t = time(NULL);
+  struct tm time_date = *localtime(&t);
+  return time_date;
+}
+
 /* Formatea una fecha de forma correcta */
 string formatDate(string date, string formatStr = "%d-%m-%Y") {
   time_t t = time(NULL);
   struct tm time_date = *localtime(&t);
   char time[20];
   strptime(date.c_str(), formatStr.c_str(), &time_date);
+  strftime(time, sizeof time, formatStr.c_str(), &time_date);
+  return string(time);
+}
+
+/* Formatea la fecha según la estructura tm */
+string formatDate(struct tm time_date, string formatStr = "%d-%m-%Y") {
+  char time[20];
   strftime(time, sizeof time, formatStr.c_str(), &time_date);
   return string(time);
 }
@@ -72,7 +97,7 @@ int validDate(string date, string formatStr = "%d-%m-%Y") {
   if (done == nullptr) {
     return 0;
   }
-  if (time_date.tm_year <= 2000) {
+  if (time_date.tm_year <= 0) { // Evaluado según el año 1900
     return 0;
   }
   return 1;
