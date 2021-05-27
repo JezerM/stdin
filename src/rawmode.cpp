@@ -5,6 +5,8 @@
 #include <string>
 #include <unistd.h>
 #include <errno.h>
+#include <termios.h>
+#include <sys/ioctl.h>
 
 #include "menu.h"
 #include "winConf.h"
@@ -40,60 +42,6 @@ void exitAll() {
   printf("\x1b[?25h");
   exit(0);
 }
-
-#ifdef _WIN32
-
-#include <windows.h>
-
-#ifndef ENABLE_VIRTUAL_TERMINAL_INPUT
-#define ENABLE_VIRTUAL_TERMINAL_INPUT 0x0200
-#endif
-
-#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-#define ENABLE_VIRTUAL_TERMINAL_PROCESSING  0x0004
-#endif
-
-DWORD initialMode;
-DWORD initialOMode;
-
-void disableRawMode() {
-  //write(STDOUT_FILENO, "\e[?1000l", 8);
-  //write(STDOUT_FILENO, "\e[?1006l", 8);
-  HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE); 
-  HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-  SetConsoleMode(hStdin, initialMode);
-  SetConsoleMode(hStdout, initialOMode);
-}
-
-void enableRawMode() {
-  atexit(disableRawMode);
-  HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
-  HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-  DWORD mode = 0;
-  DWORD oMode = 0;
-  GetConsoleMode(hStdin, &mode);
-  GetConsoleMode(hStdout, &oMode);
-  initialMode = mode;
-  initialOMode = oMode;
-
-  //mode |= (ENABLE_VIRTUAL_TERMINAL_INPUT);
-  mode &= ~(ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT | ENABLE_ECHO_INPUT | ENABLE_QUICK_EDIT_MODE);
-  SetConsoleMode(hStdin, mode);
-
-  oMode |= (DISABLE_NEWLINE_AUTO_RETURN);
-  oMode &= ~(ENABLE_PROCESSED_OUTPUT);
-  SetConsoleMode(hStdout, oMode);
-
-  //write(STDOUT_FILENO, "\e[?1000h", 8); // Para detectar el mouse
-  //write(STDOUT_FILENO, "\e[?1006h", 8); // Para formatearlo como valores decimales
-  SetConsoleCP(CP_UTF8);
-  SetConsoleOutputCP(CP_UTF8);
-}
-
-#else
-
-#include <termios.h>
-#include <sys/ioctl.h>
 
 /* Desabilita el modo "Raw" */
 void disableRawMode() {
@@ -134,7 +82,6 @@ void enableRawMode(bool t = false) {
     die("tcsetattr");
   } 
 }
-#endif
 
 void rawTimer(bool mode) {
   struct termios actual;
@@ -181,18 +128,6 @@ int getCursorPosition(int *rows, int *cols) {
   return 0;
 }
 
-#ifdef _WIN32
-int getWindowSize(int *rows, int *cols) {
-  CONSOLE_SCREEN_BUFFER_INFO csbi;
-
-  GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-  *cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-  *rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-
-  return 0;
-}
-
-#else
 /* Obtiene el tamaño de la ventana y las pasa por sus argumentos */
 int getWindowSize(int *rows, int *cols) {
   struct winsize ws;
@@ -205,7 +140,6 @@ int getWindowSize(int *rows, int *cols) {
     return 0;
   }
 }
-#endif
 
 void getch() {
   enableRawMode();

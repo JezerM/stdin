@@ -1,22 +1,37 @@
-\e[K\e[1;95mAyuda\e[0m
-\e[KMuévete con \e[1mjk\e[0m ó con las \e[1mFlechas direccionales\e[0m
-\e[KPresiona \e[1mq\e[0m para salir
+\e[K\e[1;95mAyuda\e[m
+\e[KMuévete con \e[1mjk\e[m ó con las \e[1mFlechas direccionales\e[m
+\e[KPresiona \e[1mq\e[m para salir
+\e[KPresiona \e[1m/\e[m para abrir la búsqueda
 \e[K
-\e[K\e[1mUso\e[0m
+\e[K\e[1mUso\e[m
 \e[K  Para  moverse a través de los menús, escribe la opción que deseas.
 \e[K  Si escribes un número u opción no válida, se te advertirá.
 \e[K
-\e[K\e[1mAgenda\e[0m
-\e[K  \e[1mAñadir\e[0m
-\e[K    Puedes añadir una tarea a la vez. Se te solicitará la información correspondiente, como el \e[1mNombre\e[0m y la \e[1mFecha\e[0m.
+\e[K  \e[1mLessy\e[m
+\e[K    Es una utilidad que permite mostrar largos textos en la terminal.
+\e[K    En el modo búsqueda, presiona \e[1mEnter\e[m para poder moverte por el texto. Presiona \e[1mESC\e[m para borrar la búsqueda.
+\e[K    Puedes volver a presionar \e[1m/\e[m para entrar nuevamente al modo de búsqueda.
+\e[K    Es muy posible que ocurran errores gráficos al usar el modo búsqueda.
 \e[K
-\e[K  \e[1mEliminar\e[0m
-\e[K    Puedes eliminar una tarea a la vez. Se te solicitará el índice o ubicación en la lista.
+\e[K\e[1mAgenda\e[m
+\e[K  \e[1mAñadir\e[m
+\e[K    Puedes añadir una tarea a la vez. Se te solicitará la información correspondiente, como el \e[1mNombre\e[m y la \e[1mFecha\e[m.
+\e[K    Se creará un ID único para cada tarea, el cual no puede ser cambiado. Servirá para poder identificar la tarea.
+\e[K    En caso de no añadir un dato, se añadirá uno por defecto o se te solicitará que lo añadas.
+\e[K    La fecha, por ejemplo, es un dato omitible. Se añadirá la fecha actual si no se escribe nada.
 \e[K
-\e[K\e[1mTemporizador\e[0m
-\e[K  \e[1mFuncionamiento\e[0m
+\e[K  \e[1mEliminar\e[m
+\e[K    Puedes eliminar una tarea a la vez. Se te solicitará el ID de la tarea.
+\e[K    Puedes deshacer la eliminación ingresando nuevamente el ID.
+\e[K
+\e[K  \e[1mEditar\e[m
+\e[K    Se te solicitará el ID de la tarea y posteriormente ingresarás los datos a cambiar.
+\e[K    En caso de omitir un valor, se establecerá el dato ya escrito. Si se omiten todos los datos, no se hará ningún cambio.
+\e[K
+\e[K\e[1mTemporizador\e[m
+\e[K  \e[1mFuncionamiento\e[m
 \e[K    Puedes ingresar los valores del tiempo, según desees. Sin embargo, en caso de no añadirlos, se especificarán los valores por defecto.
 \e[K
-\e[K  \e[1mIniciar\e[0m
-\e[K    Al iniciar un temporizador, se te pedirá qué tipo deseas, si el sistema \e[1mPomodoro\e[0m, \e[1mTemporizador\e[0m, o \e[1mCronómetro\e[0m.
+\e[K  \e[1mIniciar\e[m
+\e[K    Al iniciar un temporizador, se te pedirá qué tipo deseas, si el sistema \e[1mPomodoro\e[m, \e[1mTemporizador\e[m, o \e[1mCronómetro\e[m.
 \e[K    Posteriormente, se te pedirá el tiempo.

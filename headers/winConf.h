@@ -1,23 +1,11 @@
+
+#include <termios.h>
+
 #ifndef WINCONF_H
 #define WINCONF_H 1 // Estos son guards para evitar múltiples declaraciones
 
 /*** data ***/
-#ifdef _WIN32
 
-struct winConfig {
-  int cx, cy;
-  int srows;
-  int scols;
-  int actualMenu;
-  char statusMessage[100];
-  int changed;
-};
-
-extern struct winConfig conf;
-
-#else
-
-#include <termios.h>
 /* Estructura para la configuración de pantalla */
 struct winConfig {
   int cx, cy; // Posición [x y] del cursor en pantalla
@@ -31,8 +19,6 @@ struct winConfig {
 
 extern struct winConfig conf;
 
-#endif
-
 struct lessConf {
   int pos = 0;
   int cols;
@@ -41,6 +27,5 @@ struct lessConf {
   bool running = false;
   char search[20];
 };
-
 
 #endif

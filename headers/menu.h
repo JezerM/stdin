@@ -5,17 +5,8 @@
 #include <ctime>
 #include <unistd.h>
 
-#ifdef _WIN32
-
-#include "mingw.thread.h"
-#include "mingw.future.h"
-
-#else
-
 #include <thread>
 #include <future>
-
-#endif
 
 #include "winConf.h"
 

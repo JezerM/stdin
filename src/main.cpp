@@ -11,10 +11,6 @@
 #include "winConf.h"
 #include "global.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #define MVER "1.0.0"
 
 using namespace std;
@@ -45,10 +41,6 @@ void intro() {
 
 /*** init ***/
 
-#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-#define ENABLE_VIRTUAL_TERMINAL_PROCESSING  0x0004
-#endif
-
 int main(int argc, char *argv[]) {
 
   if (argc == 2) {
@@ -61,13 +53,6 @@ int main(int argc, char *argv[]) {
 
   srand(time(0));
 
-  #ifdef _WIN32
-  HANDLE hStdin = GetStdHandle(STD_OUTPUT_HANDLE); 
-  DWORD mode = 0;
-  GetConsoleMode(hStdin, &mode);
-  mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-  SetConsoleMode(hStdin, mode);
-  #endif
   /* Activa el modo alternativo, para no afectar el output anterior a correr el programa */
   write(STDOUT_FILENO, "\e[?1049h", 8);
   write(STDOUT_FILENO, "\e[?1000;1006;1007;1015l", 23);
