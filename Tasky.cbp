@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Tasky" />
+		<Option makefile="makefile" />
+		<Option makefile_is_custom="1" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="debug" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-std=gnu++14" />
+					<Add option="-g" />
+					<Add directory="src" />
+					<Add directory="headers" />
+				</Compiler>
+				<Linker>
+					<Add library="lopenal" />
+					<Add library="pthread" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="tasky" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="headers/global.h" />
+		<Unit filename="headers/menu.h" />
+		<Unit filename="headers/tasks.h" />
+		<Unit filename="headers/winConf.h" />
+		<Unit filename="src/behavior.cpp" />
+		<Unit filename="src/less.cpp" />
+		<Unit filename="src/main.cpp" />
+		<Unit filename="src/rawmode.cpp" />
+		<Unit filename="src/sound.cpp" />
+		<Unit filename="src/tasks.cpp" />
+		<Unit filename="src/timer.cpp" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>

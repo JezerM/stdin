@@ -30,3 +30,9 @@ debug.run:
 
 run:
 	@./${TARGET}
+
+
+# For Code:Blocks
+Debug: debug.compile
+
+Release: compile
