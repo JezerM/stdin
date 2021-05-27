@@ -3,10 +3,10 @@ all: compile
 # The compiler to use
 CC := g++
 VER := -std=c++14
-FLAGS := -pthread
+FLAGS := -pthread -lopenal
 
 # Target file
-TARGET := test
+TARGET := tasky
 
 # File sources
 SOURCES := src/ src/*.cpp
