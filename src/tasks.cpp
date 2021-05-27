@@ -5,9 +5,10 @@
 #include <stdexcept>
 #include <string>
 #include <iostream>
+#include <time.h>
 #include "global.h"
 #include "winConf.h"
-#include <time.h>
+#include "tasks.h"
 
 using namespace std;
 
@@ -21,23 +22,13 @@ string formatDate(string date, string formatStr = "%d-%m-%Y");
 double diffBetweenDates(struct tm date1, struct tm date2);
 struct tm getActualDate();
 string formatDate(struct tm time_date, string formatStr = "%d-%m-%Y");
+struct tm getDate(string date, string formatStr = "%d-%m-%Y");
 
-int size;
+int listSize = 0;
 
-struct task {
-  char id[8];
-  char name[51];
-  char date[12];
-  char time[12];
-  char endTime[12];
-  bool completed = false;
-  int state; // 0 "nada", 1 "añadido", 2 "editado", 3 "borrado"
-};
+struct Task lista[MAXLISTSIZE];
 
-#define LISTSIZE 100
-
-struct task lista[LISTSIZE];
-
+/* Genera un número aleatorio entre 100 y 900 */
 int randNumber() {
   const int maxNum = 900;
   const int minNum = 100;
@@ -45,21 +36,66 @@ int randNumber() {
   return ranNum;
 }
 
+/* Crea un ID aleatoriamente, comparando si existe o no el ID */
 string createID() {
   string id = to_string(randNumber());
-  for (int i = 0; i < LISTSIZE; i++) {
+  for (int i = 0; i < listSize; i++) {
     if (strcmp(lista[i].name, "") == 0) break;
     if (strcmp(lista[i].id, id.c_str()) == 0) return createID();
   }
   return id;
 }
 
+/* Verifica si las ID cargadas son correctas
+ * Si no, crea un ID */
 void checkLoadedID() {
-  for (int i = 0; i < LISTSIZE; i++) {
+  for (int i = 0; i < listSize; i++) {
     if (strcmp(lista[i].name, "") == 0) break;
     if (strcmp(lista[i].id, "") == 0) {
       strcpy(lista[i].id, createID().c_str());
     }
+  }
+}
+
+/* Intercambia la posición de dos tareas */
+void swapTasks(int i, int j) {
+  struct Task temp = lista[i];
+  lista[i] = lista[j];
+  lista[j] = temp;
+}
+
+/* Particiona la lista para el ordenamiento */
+int partition (int low, int high) {
+  int i = (low - 1);  // Index of smaller element
+  struct tm pivot = getDate(lista[high].date);
+  struct tm tmpJ;
+
+  int pivTime = mktime(&pivot);
+  int tmpTime;
+
+  for (int j = low; j <= high- 1; j++) {
+    tmpJ = getDate(lista[j].date);
+    tmpTime = mktime(&tmpJ);
+
+    //printf("[%d] [%d] %d - %d\n", i, j, pivTime, tmpTime);
+    if (tmpTime <= pivTime) {
+      i++;    // increment index of smaller element
+      swapTasks(i, j);
+      //printf("  Swapped [%d] [%d]\n", i, j);
+    }
+  }
+  swapTasks(i + 1, high);
+  //printf("  T  Swapped [%d] [%d]\n", i, high);
+  return (i + 1);
+}
+
+/* Comienza el ordenamiento de la lista */
+void quickSort(int low, int high) {
+  if (low < high) {
+    int pi = partition(low, high);
+
+    quickSort(low, pi - 1);
+    quickSort(pi + 1, high);
   }
 }
 
@@ -78,14 +114,14 @@ void loadData(string fileName) {
   checkFile(fileName);
   FILE *file;
   file = fopen(fileName.c_str(), "r");
-  struct task readed;
-  memset(lista, 0, LISTSIZE * sizeof *lista);
+  struct Task readed;
+  memset(lista, 0, MAXLISTSIZE * sizeof *lista);
   int i = 0;
-  while (fread(&readed, sizeof(struct task), 1, file)) {
+  while (fread(&readed, sizeof(struct Task), 1, file)) {
     lista[i] = readed;
     i++;
   }
-  size = i;
+  listSize = i;
   fclose(file);
   checkLoadedID();
 }
@@ -94,6 +130,9 @@ struct lessConf taskly;
 
 /* Muestra las tareas con *lessy* */
 void viewTasks() {
+  quickSort(0, listSize-1);
+  //getch();
+
   string text = "";
   text += "\e[K\e[1;95mLista de tareas\e[0m\n";
   text += "\e[KPresiona \e[1mq\e[0m para salir\n";
@@ -106,7 +145,7 @@ void viewTasks() {
   string actualDay = getActualDate("%d-%m-%Y");
   string actualTime = getActualTime("%H:%M");
 
-  for (int i = 0; i < LISTSIZE ; i++) {
+  for (int i = 0; i < listSize ; i++) {
     if (strcmp(lista[i].name, "") == 0) break;
 
     text += "\e[K";
@@ -146,7 +185,8 @@ void viewTasks() {
     if (lista[i].state == 3) { // Deleted
       strcpy(color, "\e[0;91m");
     };
-    sprintf(s, "\e[1m[%s]%s \"%s\" - %s [%s - %s] (%s) - %s", lista[i].id, color, lista[i].name, lista[i].date, lista[i].time, lista[i].endTime, diffStr, lista[i].completed ? "\e[92;1mDone\e[m" :  "Nope");
+    char format[] = "\e[K\e[1m[%s]%s %s %s\"%s\" - %s [%s - %s] (%s)";
+    sprintf(s, format, lista[i].id, color, lista[i].completed ? "\e[92;1m[Done]\e[m" : "[Nope]", color, lista[i].name, lista[i].date, lista[i].time, lista[i].endTime, diffStr);
 
     text += color + string(s) + "\e[0m\n";
   }
@@ -156,7 +196,7 @@ void viewTasks() {
 /* Añade una tarea */
 void addTask() {
   clear();
-  struct task newTask;
+  struct Task newTask;
   newTask.completed = false;
   newTask.state = 1;
 
@@ -223,8 +263,8 @@ void addTask() {
   strcpy(newTask.endTime, formatDate(newTask.endTime, f).c_str());
 
   strcpy(newTask.id, createID().c_str());
-  lista[size] = newTask;
-  size++;
+  lista[listSize] = newTask;
+  listSize++;
   conf.changed = 1;
 
   strcpy(conf.statusMessage, "Tarea añadida");
@@ -233,7 +273,7 @@ void addTask() {
 /* Elimina una tarea */
 void removeTask() {
   clear();
-  struct task copyList[LISTSIZE];
+  struct Task copyList[MAXLISTSIZE];
   int index = -1;
 
   printf("\e[H");
@@ -248,7 +288,7 @@ void removeTask() {
   if (strcmp(ind, "") == 0) {
     return;
   };
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < listSize; i++) {
     if (strcmp(lista[i].id, ind) == 0) {
       index = i;
       break;
@@ -274,7 +314,8 @@ void removeTask() {
   }
 
   char s[150];
-  sprintf(s, "\n\e[1m[%s]\e[0m \"%s\" - %s %s - %s", ind, lista[index].name, lista[index].date, lista[index].time, lista[index].completed ? "Done" :  "Nope");
+  char format[] = "\n\e[1m[%s]\e[m \"%s\" - %s [%s - %s] - %s";
+  sprintf(s, format, ind, lista[index].name, lista[index].date, lista[index].time, lista[index].endTime, lista[index].completed ? "Done" :  "Nope");
   printf("%s\n\n", s);
   int edit;
   printf("¿Esta es la tarea a eliminar?\n");
@@ -287,7 +328,7 @@ void removeTask() {
   if (lista[index].state != 3) {
     lista[index].state = 3; // Borrado
   } else {
-    lista[index].state = 1;
+    lista[index].state = 1; // Añadido
   }
   conf.changed = 1;
 
@@ -297,7 +338,7 @@ void removeTask() {
 /* Edita una tarea */
 void editTask() {
   clear();
-  struct task editedTask;
+  struct Task editedTask;
   editedTask.state = 2; // Edited
   char c;
   int befInd;
@@ -322,7 +363,7 @@ void editTask() {
   if (strcmp(ind, "") == 0) {
     return;
   };
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < listSize; i++) {
     if (strcmp(lista[i].id, ind) == 0) {
       index = i;
       break;
@@ -347,7 +388,8 @@ void editTask() {
   }
 
   char s[150];
-  sprintf(s, "\n\e[1m[%s]\e[0m \"%s\" - %s %s - %s", ind, lista[index].name, lista[index].date, lista[index].time, lista[index].completed ? "Done" :  "Nope");
+  char format[] = "\n\e[1m[%s]\e[m \"%s\" - %s [%s - %s] - %s";
+  sprintf(s, format, ind, lista[index].name, lista[index].date, lista[index].time, lista[index].endTime, lista[index].completed ? "Done" :  "Nope");
   printf("%s\n\n", s);
   int edit;
   printf("¿Esta es la tarea a editar?\n");
@@ -413,11 +455,11 @@ void editTask() {
 void saveData(string fileName) {
   FILE *temp;
   temp = fopen("temp.bin", "w");
-  for (int i = 0; i < LISTSIZE; i++) {
+  for (int i = 0; i < MAXLISTSIZE; i++) {
     if (strcmp(lista[i].name, "") == 0) break;
     if (lista[i].state == 3) continue; // Si está borrado, ignorar
     lista[i].state = 0;
-    fwrite(&lista[i], sizeof(struct task), 1, temp);
+    fwrite(&lista[i], sizeof(struct Task), 1, temp);
   }
   fclose(temp);
   remove(fileName.c_str());

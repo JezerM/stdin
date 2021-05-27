@@ -42,4 +42,5 @@ struct lessConf {
   char search[20];
 };
 
+
 #endif

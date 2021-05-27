@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include "winConf.h"
 
 #ifndef GLOBALA_H
 #define GLOBALA_H 1
@@ -27,6 +28,5 @@ void playBeep(float freq, int milliseconds);
 std::vector<std::string> split(std::string text, std::string del);
 std::string strreplace(std::string orgString, const std::string search, const std::string replace );
 std::string catFile(std::string fileName, bool ansi);
-
 
 #endif

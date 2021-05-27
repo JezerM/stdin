@@ -13,6 +13,7 @@ using namespace std;
 
 struct lessConf g;
 
+/* Marca la búsqueda */
 string markSearch(string text, struct lessConf lessy) {
   string search = string(lessy.search);
   if (search.size() <= 0) {
@@ -33,6 +34,7 @@ string markSearch(string text, struct lessConf lessy) {
   return text;
 }
 
+/* Lee las flechas direccionales */
 char readArrowKey(char c) {
   char s = '\0';
   char seq[3];

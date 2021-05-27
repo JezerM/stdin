@@ -8,6 +8,7 @@
 #include "menu.h"
 #include "winConf.h"
 #include "global.h"
+#include "tasks.h"
 
 using namespace std;
 
@@ -33,6 +34,7 @@ double diffBetweenDates(string date1, string date2, string formatStr = "%d-%m-%Y
   return difference;
 }
 
+/* Lo mismo, pero con la struct tm */
 double diffBetweenDates(struct tm date1, struct tm date2) {
   time_t time_first = mktime(&date1);
   time_t time_second = mktime(&date2);
@@ -65,6 +67,7 @@ string getActualTime(string formatStr = "%H:%M:%S") {
   return string(time);
 }
 
+/* Obtiene la fecha actual como una struct tm */
 struct tm getActualDate() {
   time_t t = time(NULL);
   struct tm time_date = *localtime(&t);
@@ -103,6 +106,41 @@ int validDate(string date, string formatStr = "%d-%m-%Y") {
   return 1;
 }
 
+/* Obtiene el struct tm a partir de un string */
+struct tm getDate(string date, string formatStr = "%d-%m-%Y") {
+  time_t t = time(NULL);
+  struct tm time_date = *localtime(&t);
+  strptime(date.c_str(), formatStr.c_str(), &time_date);
+  return time_date;
+}
+
+
+/* Obtiene las tareas en el rango de hora actual */
+string getTasks() {
+  string text = "";
+  string actualDate = getActualDate("%d-%m-%Y");
+  string actualTime = getActualTime("%H:%M");
+
+  int count = 0;
+  for (int i = 0; i < listSize; i++) {
+    if (count > 5) break;
+
+    double diff_Date = diffBetweenDates(actualDate, lista[i].date);
+    double diff_Time = diffBetweenDates(actualTime, lista[i].time, "%H:%M");
+    double diff_EndT = diffBetweenDates(actualTime, lista[i].endTime, "%H:%M");
+
+    if (diff_Date != 0) continue;
+    if (diff_Time >= 0 && diff_EndT <= 0) {
+      char s[120];
+      char format[] = "\e[1m[%s]\e[m %s \"%s\" - %s [%s - %s]\r\n";
+      sprintf(s, format, lista[i].id, lista[i].completed ? "\e[92;1m[Done]\e[m" : "[Nope]", lista[i].name, lista[i].date, lista[i].time, lista[i].endTime);
+      text += s;
+      count++;
+    }
+  }
+  return text;
+}
+
 /* Crea un pequeño beep de alerta */
 void alertBeep() {
   write(STDOUT_FILENO, "\e[?5h", 5);
@@ -132,6 +170,9 @@ void restartTimer() {
 void viewTime() {
   printf("\e[?25l");
   enableRawMode(true);
+
+  string tasks = getTasks();
+
   while (1) {
     printf("\e[H");
     string name;
@@ -150,21 +191,25 @@ void viewTime() {
         desc = "Estás visualizando... ¿qué hiciste?";
         break;
     }
-    string mag = "\e[1;95m";
-    string clLine = "\e[K";
-    string naimu = clLine + mag + name + "\e[0m\r\n";
-    string desci = clLine + desc + "\r\n";
+    string naimu = "\e[K\e[1;95m" + name + "\e[0m\r\n";
+    string desci = "\e[K" + desc + "\r\n";
     printf("\e[K%s", naimu.c_str());
     printf("\e[K%s", desci.c_str());
+
     char time[13];
     sprintf(time, "%.2d : %.2d : %.2d", tempo.hours, tempo.minutes, tempo.seconds);
-    printf("\e[K%s\r\n", time);
-    printf("\n");
+    printf("\e[K%s\r\n\n", time);
+
     printf("\e[KEstado: \e[1m%s\e[0m\r\n", tempo.state);
+
     if (tempo.mode == 0) {
       printf("\e[KVueltas: \e[1m%d\e[0m\r\n", tempo.loop);
     }
-    printf("\r\n\e[KPresiona cualquier tecla para salir\r\n");
+
+    tasks = getTasks();
+    printf("\n%s", tasks.c_str());
+
+    printf("\e[K\r\n\e[KPresiona cualquier tecla para salir\r\n");
     printf("\e[J");
     char c = readKey();
     if (c != '\0') break;
@@ -176,10 +221,8 @@ void viewTime() {
 /* Pregunta el tiempo del Temporizador */
 void askTime() {
   printf("\e[H");
-  string mag = "\e[1;95m";
-  string clLine = "\e[K";
-  string naimu = clLine + mag + "Temporizador" + "\e[0m\n";
-  string desci = clLine + "Ingresa el tiempo (horas, minutos, segundos)." + "\n";
+  string naimu =  "\e[K\e[1;95mTemporizador\e[0m\n";
+  string desci = "Ingresa el tiempo (horas, minutos, segundos)\n";
   printf("\e[K%s", naimu.c_str());
   printf("\e[K%s", desci.c_str());
 
@@ -187,36 +230,44 @@ void askTime() {
   int hours, minutes, seconds;
 
   printf("\e[KHoras: ");
-  fgets(h, 10, stdin);
-  printf("\e[KMinutos: ");
-  fgets(m, 10, stdin);
-  printf("\e[KSegundos: ");
-  fgets(s, 10, stdin);
+  cin.getline(h, sizeof h);
 
+  printf("\e[KMinutos: ");
+  cin.getline(m, sizeof m);
+
+  printf("\e[KSegundos: ");
+  cin.getline(s, sizeof s);
+
+  int t = 0;
   try {
-    if (strcmp(h, "\n") == 0) {
-      hours = 1;
+    if (strcmp(h, "") == 0) {
+      hours = 0;
+      t++;
     } else {
-      strtok(h,"\n");
       hours = stoi(h);
     }
-    if (strcmp(m, "\n") == 0) {
-      minutes = 30;
+    if (strcmp(m, "") == 0) {
+      minutes = 0;
+      t++;
     } else {
-      strtok(m,"\n");
       minutes = stoi(m);
     }
-    if (strcmp(s, "\n") == 0) {
+    if (strcmp(s, "") == 0) {
       seconds = 0;
+      t++;
     } else {
-      strtok(s,"\n");
       seconds = stoi(s);
     }
   } catch (invalid_argument) {
-    printf("\e[91;1mError:\e[0m Argumentos inválidos. Ingresa correctamente los datos.\n");
-    getch();
+    strcpy(conf.statusMessage, "\e[91;1mError:\e[m Argumento inválidos. Ingresa correctamente los datos");
     return;
   }
+
+  if (t >= 3) {
+    strcpy(conf.statusMessage, "El temporizador no fue iniciado");
+    return;
+  }
+
   int time = hours*3600 + minutes*60 + seconds;
   tempo.time = time;
   printf("\e[KTiempo especificado en \e[1m%.2d : %.2d : %.2d\e[0m\n", hours, minutes, seconds);
@@ -254,10 +305,8 @@ void runTimer() {
 /* Pregunta el tiempo del Pomodoro */
 void askPomodoro() {
   printf("\e[H");
-  string mag = "\e[1;95m";
-  string clLine = "\e[K";
-  string naimu = clLine + mag + "Pomodoro" + "\e[0m\n";
-  string desci = clLine + "Ingresa los datos del temporizador Pomodoro" + "\n";
+  string naimu = "\e[K\e[1;95mPomodoro\e[0m\n";
+  string desci = "Ingresa los datos del temporizador Pomodoro\n";
   printf("\e[K%s", naimu.c_str());
   printf("\e[K%s", desci.c_str());
   printf("\e[K\n");
@@ -266,35 +315,35 @@ void askPomodoro() {
   int time, shortTime, longTime;
 
   printf("\e[KTiempo total (minutos): ");
-  fgets(t, 10, stdin);
+  cin.getline(t, sizeof s);
+
   printf("\e[KDescanso corto: ");
-  fgets(s, 10, stdin);
+  cin.getline(s, sizeof s);
+
   printf("\e[KDescando largo: ");
-  fgets(l, 10, stdin);
+  cin.getline(l, sizeof l);
+
   try {
-    if (strcmp(t, "\n") == 0) {
+    if (strcmp(t, "") == 0) {
       time = 25 * 60;
     } else {
-      strtok(t,"\n");
       time = stoi(t) * 60;
     }
-    if (strcmp(s, "\n") == 0) {
+    if (strcmp(s, "") == 0) {
       shortTime = 5 * 60;
     } else {
-      strtok(s,"\n");
       shortTime = stoi(s) * 60;
     }
-    if (strcmp(l, "\n") == 0) {
+    if (strcmp(l, "") == 0) {
       longTime = 10 * 60;
     } else {
-      strtok(l,"\n");
       longTime = stoi(l) * 60;
     }
   } catch (invalid_argument) {
-    printf("\e[91;1mError:\e[0m Argumentos inválidos. Ingresa correctamente los datos.\n");
-    getch();
+    strcpy(conf.statusMessage, "\e[91;1mError:\e[m Argumento inválidos. Ingresa correctamente los datos");
     return;
   }
+
   tempo.time = time;
   tempo.shortBreak = shortTime;
   tempo.longBreak = longTime;
