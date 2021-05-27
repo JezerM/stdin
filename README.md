@@ -12,7 +12,7 @@ git clone https://github.com/JezerM/stdin
 ```
 Es 100% necesario tener un entorno Linux, debido a la librería `termios.h`
 
-Para la compilación, se recomienda usar `make`.
+Para la compilación, se recomienda usar `make` y `make run`
 
 ## Funcionamiento
 Se usa la librería `termios.h` para activar el modo `raw`, el cual permite que cada carácter sea recibido inmediatamente por el programa y evitar que éste sea imprimido en pantalla.
