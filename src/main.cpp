@@ -62,10 +62,8 @@ int main(int argc, char *argv[]) {
 
   while (1) {
     printf("\e[H");
-    string mag = "\e[1;95m";
-    string clLine = "\e[K";
-    string naimu = clLine + mag + "Tasky" + "\e[0m\n";
-    string desci = clLine + "¡Esto es Tasky! Escribe la opción que desees" + "\n";
+    string naimu = "\e[K\e[1;95mTasky\e[0m\n";
+    string desci = "\e[K¡Esto es Tasky! Escribe la opción que desees\n";
     printf("%s", naimu.c_str());
     printf("%s", desci.c_str());
     printf("\e[K\n");

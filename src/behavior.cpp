@@ -55,10 +55,8 @@ vector<string> split(string text, string del = " ") {
 void menu_Task() {
   while (1) {
     printf("\e[H");
-    string mag = "\e[1;95m";
-    string clLine = "\e[K";
-    string naimu = clLine + mag + "Lista de tareas" + "\e[0m\n";
-    string desci = clLine + "Esta es la agenda." + "\n";
+    string naimu = "\e[K\e[1;95mLista de tareas\e[m\n";
+    string desci = "\e[KEsta es la agenda.\n";
     printf("%s", naimu.c_str());
     printf("%s", desci.c_str());
     printf("\e[K\n");
@@ -104,9 +102,9 @@ void menu_Task() {
         saveData("data.bin");
         break;
       case 7:
-	loadData("data.bin");
+        loadData("data.bin");
         strcpy(conf.statusMessage, "Los cambios fueron deshechos");
-	break;
+        break;
       default:
         strcpy(conf.statusMessage, "\e[93;1mError:\e[0m Número no válido");
         break;
@@ -119,10 +117,8 @@ void menu_Task() {
 void menu_SelectTimer() {
   while (1) {
     printf("\e[H");
-    string mag = "\e[1;95m";
-    string clLine = "\e[K";
-    string naimu = clLine + mag + "Temporizador" + "\e[0m\n";
-    string desci = clLine + "Selección del método de temporizador." + "\n";
+    string naimu = "\e[K\e[1;95mTemporizador\e[0m\n";
+    string desci = "\e[KSelección del método de temporizador.\n";
     printf("%s", naimu.c_str());
     printf("%s", desci.c_str());
     printf("\e[K\n");
@@ -171,10 +167,8 @@ void menu_SelectTimer() {
 void menu_Timer() {
   while (1) {
     printf("\e[H");
-    string mag = "\e[1;95m";
-    string clLine = "\e[K";
-    string naimu = clLine + mag + "Temporizador" + "\e[0m\n";
-    string desci = clLine + "Este es el temporizador." + "\n";
+    string naimu = "\e[K\e[1;95mTemporizador\e[m\n";
+    string desci = "\e[KEste es el temporizador.\n";
     printf("%s", naimu.c_str());
     printf("%s", desci.c_str());
     printf("\e[K\n");
@@ -215,7 +209,8 @@ void menu_Timer() {
             strcpy(conf.statusMessage, "Pomodoro iniciado");
           } else
           if (tempo.mode == 1) { // Temporizador
-            std::make_unique<std::future<void>*>(new auto(std::async(std::launch::async, runTimer))).reset();
+            unique_ptr<future<void>*> a = make_unique<future<void>*>(new auto(async(launch::async, runTimer)));
+            a.reset();
             strcpy(conf.statusMessage, "Temporizador iniciado");
           }
         }

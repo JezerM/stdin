@@ -11,11 +11,13 @@ sudo apt install libopenal-dev build-essential
 
 ## Instalación
 ```bash
-git clone https://github.com/JezerM/stdin
+git clone https://github.com/JezerM/tasky
 ```
 Es 100% necesario tener un entorno Linux, debido a la librería `termios.h`
 
 Para la compilación, se recomienda usar `make`.
+
+La integración con `Code::Blocks` fue incluida. Si se desea, se puede compilar desde el mismo al abrir **Tasky.cbp**.
 
 ## Funcionamiento
 Se ingresa en un loop infinito, que imprimirá las distintas opciones y solicitará una opción al usuario. Según sea la opción elegida se hará una acción u otra, ya sea entrar a otro menú o efectuar una acción directa.
