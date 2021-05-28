@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     printf("\e[K\e[1m[1]\e[0m - Salir\n");
     printf("\e[K\e[1m[2]\e[0m - Lista de tareas\n");
     printf("\e[K\e[1m[3]\e[0m - Temporizador\n");
-    printf("\e[K\e[1m[4]\e[0m - Ayuda\n");
+    printf("\e[K\e[1m[4]\e[0m - Mostrar Ayuda\n");
     int opt;
     printf("\e[K\e[92;1mSelecciona:\e[0m \e[J");
 

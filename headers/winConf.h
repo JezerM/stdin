@@ -20,12 +20,12 @@ struct winConfig {
 extern struct winConfig conf;
 
 struct lessConf {
-  int pos = 0;
-  int cols;
-  int rows;
-  int lines = 0;
-  bool running = false;
-  char search[20];
+  int pos = 0; // La posición del cursor.
+  int cols; // la cantidad de columnas máximas, determinada por el tamaño de la terminal.
+  int rows; // la cantidad de filas máximas, determinada por el tamaño de la terminal.
+  int lines = 0; // La cantidad de líneas del texto
+  bool running = false; // Indica si la función está o no corriendo.
+  char search[20]; // Usado para buscar por términos. 
 };
 
 #endif

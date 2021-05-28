@@ -28,6 +28,7 @@ void removeTask();
 void editTask();
 void viewTasks();
 void saveData(string fileName);
+void loadData(string fileName);
 
 void lessText(string text, struct lessConf lessy);
 
@@ -66,7 +67,8 @@ void menu_Task() {
     printf("\e[K\e[1m[3]\e[0m - Añadir una tarea\n");
     printf("\e[K\e[1m[4]\e[0m - Editar una tarea\n");
     printf("\e[K\e[1m[5]\e[0m - Eliminar una tarea\n");
-    printf("\e[K\e[1m[6]\e[0m - Guardar datos\n");
+    printf("\e[K\e[1m[6]\e[0m - Guardar cambios\n");
+    printf("\e[K\e[1m[7]\e[0m - Deshacer cambios\n");
     int opt;
     printf("\e[K\e[92;1mSelecciona:\e[0m \e[J");
 
@@ -101,6 +103,10 @@ void menu_Task() {
       case 6:
         saveData("data.bin");
         break;
+      case 7:
+	loadData("data.bin");
+        strcpy(conf.statusMessage, "Los cambios fueron deshechos");
+	break;
       default:
         strcpy(conf.statusMessage, "\e[93;1mError:\e[0m Número no válido");
         break;
@@ -121,9 +127,9 @@ void menu_SelectTimer() {
     printf("%s", desci.c_str());
     printf("\e[K\n");
     printf("\e[K\e[1m[1]\e[0m - Regresar\n");
-    printf("\e[K\e[1m[2]\e[0m - Pomodoro\n");
-    printf("\e[K\e[1m[3]\e[0m - Temporizador\n");
-    printf("\e[K\e[1m[4]\e[0m - \e[90mCronómetro\e[0m\n");
+    printf("\e[K\e[1m[2]\e[0m - Iniciar Pomodoro\n");
+    printf("\e[K\e[1m[3]\e[0m - Iniciar Temporizador\n");
+    printf("\e[K\e[1m[4]\e[0m - \e[90mIniciar Cronómetro\e[0m\n");
     int opt;
     printf("\e[K\e[92;1mSelecciona:\e[0m \e[J");
 
