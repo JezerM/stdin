@@ -5,6 +5,7 @@ tasky.exe
 debug
 debug.exe
 compile_commands.json
+obj/
 .cache/
 
 data.bin

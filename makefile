@@ -9,30 +9,35 @@ FLAGS := -pthread -lopenal
 TARGET := tasky
 
 # File sources
-SOURCES := -I src/ src/*.cpp
-HEADERS := -I headers/ -I mingw-std-threads/
+SOURCES := ${wildcard src/*.cpp}
+HEADERS := -I headers/
+OBJECTS := $(patsubst src/%.cpp, obj/%.o, $(SOURCES))
 
-compile:
-	@echo "Compilando en \"${TARGET}\"..."
-	${CC} ${SOURCES} ${HEADERS} -o ${TARGET} ${VER} ${FLAGS}
-	@echo "Terminado."
+# Debug
+DEBUG := debugf
 
-debug: debug.compile debug.run
+${OBJECTS}: obj/%.o : src/%.cpp
+	${CC} ${VER} ${HEADERS} -c $< -o $@ ${FLAGS}
 
-debug.compile:
-	@echo "Compilando para el debug..."
-	${CC} -g ${SOURCES} ${HEADERS} -o debug ${VER} ${FLAGS}
-	@echo "Compilado."
+compile: build ${OBJECTS}
+	${CC} ${VER} ${HEADERS} obj/*.o -o ${TARGET} ${FLAGS}
 
-debug.run:
-	@echo "Ejecutando gdb..."
-	gdb debug
+clean:
+	rm -rf ${OBJECTS} ${DEBUG} obj
+
+${DEBUG} : src/*.cpp
+	${CC} -g ${SOURCES} ${HEADERS} -o ${DEBUG} ${VER} ${FLAGS}
+
+debug: ${DEBUG}
+	@gdb ${DEBUG}
 
 run:
 	@./${TARGET}
 
+build:
+	@mkdir -p obj
 
 # For Code:Blocks
-Debug: debug.compile
+Debug: ${DEBUG}
 
 Release: compile
